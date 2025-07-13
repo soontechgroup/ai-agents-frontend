@@ -1,8 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { User, BackendResponse, LoginResponse, AuthContextType } from '@/lib/types';
-import { API_ENDPOINTS } from '@/lib/api-config';
+import { User, LoginResponse, AuthContextType } from '@/lib/types';
+import { authService } from '@/lib/api';
+import { ApiError } from '@/lib/types/api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -32,22 +33,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const response = await fetch(API_ENDPOINTS.auth.me, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-        
-        // 设置 cookie 用于中间件
-        document.cookie = `token=${token}; path=/; max-age=86400; SameSite=Lax`;
-      } else {
-        localStorage.removeItem('token');
-        document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      }
+      const userData = await authService.getCurrentUser();
+      setUser(userData);
+      
+      // 设置 cookie 用于中间件
+      document.cookie = `token=${token}; path=/; max-age=86400; SameSite=Lax`;
     } catch (error) {
       console.error('Token verification failed:', error);
       localStorage.removeItem('token');
@@ -69,35 +59,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSuccess(null);
 
     try {
-      const response = await fetch(API_ENDPOINTS.auth.login, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          username,
-          password,
-        }),
-      });
+      const response = await authService.login({ username, password });
 
-      const data: BackendResponse<LoginResponse> = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || data.detail || '登录失败');
-      }
-
-      if (data.data?.access_token) {
-        localStorage.setItem('token', data.data.access_token);
+      if (response.data?.access_token) {
+        localStorage.setItem('token', response.data.access_token);
         
         // 设置 cookie
-        document.cookie = `token=${data.data.access_token}; path=/; max-age=86400; SameSite=Lax`;
+        document.cookie = `token=${response.data.access_token}; path=/; max-age=86400; SameSite=Lax`;
         
         // 获取用户信息
         await verifyToken();
         setSuccess('登录成功！');
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : '登录失败');
+      const apiError = error as ApiError;
+      setError(apiError.message || '登录失败');
       throw error;
     } finally {
       setLoading(false);
@@ -111,28 +87,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSuccess(null);
 
     try {
-      const response = await fetch(API_ENDPOINTS.auth.register, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-          full_name,
-        }),
+      await authService.register({
+        username,
+        email,
+        password,
+        full_name,
       });
-
-      const data: BackendResponse<User> = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || data.detail || '注册失败');
-      }
 
       setSuccess('注册成功！请登录。');
     } catch (error) {
-      setError(error instanceof Error ? error.message : '注册失败');
+      const apiError = error as ApiError;
+      setError(apiError.message || '注册失败');
       throw error;
     } finally {
       setLoading(false);
@@ -140,11 +105,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // 登出
-  const logout = () => {
-    localStorage.removeItem('token');
-    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    setUser(null);
-    setSuccess('已成功登出');
+  const logout = async () => {
+    try {
+      await authService.logout();
+      setUser(null);
+      setSuccess('已成功登出');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   // 重置消息
