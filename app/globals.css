@@ -1,3 +1,82 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    /* 背景色系 */
+    --bg-primary: #0A1628;
+    --bg-secondary: #1A1A2E;
+    --bg-tertiary: #16213E;
+    --bg-overlay: rgba(10, 22, 40, 0.85);
+    
+    /* 强调色 */
+    --accent-primary: #00D9FF;
+    --accent-secondary: #7B68EE;
+    --accent-gradient: linear-gradient(135deg, #00D9FF 0%, #7B68EE 100%);
+    
+    /* 文字色 */
+    --text-primary: #F5F5F5;
+    --text-secondary: #B8BCC8;
+    --text-muted: #6C7293;
+    
+    /* 功能色 */
+    --success: #00F5A0;
+    --warning: #F7B731;
+    --error: #EE5A6F;
+    --info: #4FACFE;
+    
+    /* 边框和分割线 */
+    --border-default: rgba(255, 255, 255, 0.1);
+    --border-hover: rgba(255, 255, 255, 0.2);
+    --border-focus: var(--accent-primary);
+    
+    /* 阴影 */
+    --shadow-sm: 0 1px 3px rgba(0, 217, 255, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 217, 255, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 217, 255, 0.15);
+    --shadow-xl: 0 20px 25px rgba(0, 217, 255, 0.2);
+    --glow-sm: 0 0 10px rgba(0, 217, 255, 0.3);
+    --glow-md: 0 0 20px rgba(0, 217, 255, 0.4);
+    
+    /* 动画时间 */
+    --duration-fast: 150ms;
+    --duration-normal: 300ms;
+    --duration-slow: 500ms;
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+}
+
+/* 自定义动画 */
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+}
+
+@keyframes ripple {
+  from {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  to {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* 输入框聚焦样式 */
+.input-focus {
+  box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1), 0 0 10px rgba(0, 217, 255, 0.3);
+}
