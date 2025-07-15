@@ -369,7 +369,7 @@
         /* 功能按钮组 */
         .action-buttons {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 1rem;
             margin-top: 2rem;
         }
@@ -506,12 +506,12 @@
                         <div class="stat-label">数字人</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value">自传</div>
-                        <div class="stat-label">当前模式</div>
+                        <div class="stat-value">48</div>
+                        <div class="stat-label">总对话数</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value">156</div>
-                        <div class="stat-label">访谈记录</div>
+                        <div class="stat-label">训练次数</div>
                     </div>
                 </div>
             </div>
@@ -550,22 +550,20 @@
 
         <!-- 功能按钮 -->
         <div class="action-buttons">
-            <a href="#" class="btn">首页</a>
-            <a href="#" class="btn">会话</a>
+            <a href="#" class="btn">训练</a>
             <a href="#" class="btn active">➕</a>
-            <a href="#" class="btn">书单</a>
-            <a href="#" class="btn">我的</a>
+            <a href="#" class="btn">会话</a>
         </div>
 
-        <!-- 访谈记录 -->
+        <!-- 我的数字人 -->
         <div class="records-section">
-            <h3 class="section-title">访谈记录</h3>
+            <h3 class="section-title">我的数字人</h3>
             <div class="empty-state">
-                <div class="empty-icon">📝</div>
-                <p>还没有自传，请先创建自传</p>
+                <div class="empty-icon">🤖</div>
+                <p>您还没有创建数字人</p>
                 <a href="#" class="create-btn">
                     <span>➕</span>
-                    <span>创建自传</span>
+                    <span>创建数字人</span>
                 </a>
             </div>
         </div>

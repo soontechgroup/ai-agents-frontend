@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字人记忆体 - 知识图谱可视化</title>
+    <style>
+        :root {
+            /* 背景色系 */
+            --bg-primary: #0A1628;
+            --bg-secondary: #1A1A2E;
+            --bg-tertiary: #16213E;
+            --bg-overlay: rgba(10, 22, 40, 0.85);
+            
+            /* 强调色 */
+            --accent-primary: #00D9FF;
+            --accent-secondary: #7B68EE;
+            --accent-gradient: linear-gradient(135deg, #00D9FF 0%, #7B68EE 100%);
+            
+            /* 文字色 */
+            --text-primary: #F5F5F5;
+            --text-secondary: #B8BCC8;
+            --text-muted: #6C7293;
+            
+            /* 功能色 */
+            --success: #00F5A0;
+            --warning: #F7B731;
+            --error: #EE5A6F;
+            --info: #4FACFE;
+            
+            /* 边框和分割线 */
+            --border-default: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --border-focus: var(--accent-primary);
+            
+            /* 阴影 */
+            --shadow-sm: 0 1px 3px rgba(0, 217, 255, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 217, 255, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 217, 255, 0.15);
+            --shadow-xl: 0 20px 25px rgba(0, 217, 255, 0.2);
+            --glow-sm: 0 0 10px rgba(0, 217, 255, 0.3);
+            --glow-md: 0 0 20px rgba(0, 217, 255, 0.4);
+            
+            /* 动画 */
+            --duration-fast: 150ms;
+            --duration-normal: 300ms;
+            --duration-slow: 500ms;
+            --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 网格背景 */
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(0, 217, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 217, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 主容器 */
+        .memory-container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 顶部栏 - 调整标题大小 */
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background: rgba(26, 26, 46, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-default);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            z-index: 100;
+        }
+
+        .header-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-title-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-gradient);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .header-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .header-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--duration-normal);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .header-btn:hover {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: var(--accent-primary);
+        }
+
+        /* 添加遮罩层效果 */
+        .detail-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 22, 40, 0.5);
+            backdrop-filter: blur(2px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--duration-normal);
+            z-index: 199;
+        }
+        
+        .detail-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        /* 主内容区 - 移除右侧的空间 */
+        .main-content {
+            display: flex;
+            width: 100%;
+            padding-top: 60px;
+            height: 100vh;
+        }
+
+        /* 左侧面板 - 调整高度 */
+        .left-panel {
+            width: 320px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-default);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 56px);
+        }
+
+        /* 记忆统计 */
+        .memory-stats {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border-default);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .stat-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 0.875rem;
+            text-align: center;
+            transition: all var(--duration-normal);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin-bottom: 0.125rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* 记忆类型过滤 */
+        .memory-filters {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border-default);
+        }
+
+        .filter-title {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .filter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: rgba(0, 217, 255, 0.05);
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all var(--duration-normal);
+        }
+
+        .filter-item:hover {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: var(--accent-primary);
+        }
+
+        .filter-item.active {
+            background: rgba(0, 217, 255, 0.15);
+            border-color: var(--accent-primary);
+        }
+
+        .filter-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .filter-name {
+            flex: 1;
+            font-size: 0.875rem;
+        }
+
+        .filter-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--bg-primary);
+            padding: 0.125rem 0.5rem;
+            border-radius: 10px;
+        }
+
+        /* 搜索框 */
+        .memory-search {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all var(--duration-normal);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: var(--glow-sm);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        /* 最近记忆列表 */
+        .recent-memories {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .recent-memories::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .recent-memories::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .recent-memories::-webkit-scrollbar-thumb {
+            background: var(--border-default);
+            border-radius: 3px;
+        }
+
+        .memory-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-default);
+            cursor: pointer;
+            transition: all var(--duration-normal);
+        }
+
+        .memory-item:hover {
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        .memory-item.active {
+            background: rgba(0, 217, 255, 0.1);
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        .memory-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .memory-content {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* 中间图谱区域 - 占满剩余空间 */
+        .graph-panel {
+            flex: 1;
+            position: relative;
+            background: var(--bg-primary);
+            overflow: hidden;
+            height: calc(100vh - 60px);
+        }
+
+        /* 知识图谱画布 */
+        #knowledgeGraph {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* 图谱控制栏 */
+        .graph-controls {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--duration-normal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+        }
+
+        .control-btn:hover {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: var(--accent-primary);
+        }
+
+        /* 图谱信息面板 */
+        .graph-info {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background: rgba(26, 26, 46, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 1rem;
+            min-width: 200px;
+        }
+
+        .graph-info-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .graph-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.concept { background: var(--accent-primary); }
+        .legend-dot.person { background: var(--success); }
+        .legend-dot.event { background: var(--warning); }
+        .legend-dot.skill { background: var(--accent-secondary); }
+
+        /* 右侧详情面板 - 悬浮样式 */
+        .detail-panel {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 400px;
+            max-height: calc(100vh - 100px);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-xl), 0 0 50px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            transform: translateX(calc(100% + 40px));
+            transition: transform var(--duration-normal) var(--ease-in-out);
+            z-index: 200;
+        }
+
+        .detail-panel.active {
+            transform: translateX(0);
+        }
+
+        /* 悬浮面板的玻璃态效果 */
+        .detail-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            background: linear-gradient(135deg, 
+                rgba(0, 217, 255, 0.1) 0%, 
+                rgba(123, 104, 238, 0.05) 100%);
+            pointer-events: none;
+        }
+
+        /* 详情头部 - 增强样式 */
+        .detail-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-default);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(26, 26, 46, 0.6);
+            border-radius: 16px 16px 0 0;
+        }
+
+        .detail-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .close-detail {
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--duration-normal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-detail:hover {
+            background: rgba(255, 82, 82, 0.1);
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        /* 详情内容 - 优化滚动 */
+        .detail-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            max-height: calc(100vh - 200px);
+        }
+        
+        /* 为详情内容添加更好的滚动条样式 */
+        .detail-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .detail-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
+        }
+        
+        .detail-content::-webkit-scrollbar-thumb {
+            background: var(--border-default);
+            border-radius: 4px;
+            transition: background var(--duration-fast);
+        }
+        
+        .detail-content::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
+
+        .detail-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 3px;
+            height: 12px;
+            background: var(--accent-gradient);
+            border-radius: 2px;
+        }
+
+        /* MongoDB 文档内容 */
+        .document-content {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        /* Neo4j 关系列表 */
+        .relations-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .relation-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(0, 217, 255, 0.05);
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .relation-type {
+            color: var(--accent-primary);
+            margin: 0 0.5rem;
+            font-weight: 500;
+        }
+
+        /* Chroma 相似度 */
+        .similarity-score {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+        }
+
+        .score-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .score-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .score-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: var(--accent-gradient);
+            width: 85%;
+            transition: width var(--duration-slow);
+        }
+
+        /* 标签列表 */
+        .tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            padding: 0.375rem 0.75rem;
+            background: rgba(123, 104, 238, 0.1);
+            border: 1px solid var(--accent-secondary);
+            border-radius: 16px;
+            font-size: 0.75rem;
+            color: var(--accent-secondary);
+        }
+
+        /* 时间线 */
+        .timeline {
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-default);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -18px;
+            top: 6px;
+            width: 12px;
+            height: 12px;
+            background: var(--accent-primary);
+            border: 2px solid var(--bg-secondary);
+            border-radius: 50%;
+        }
+
+        .timeline-content {
+            padding: 0.75rem;
+            background: rgba(0, 217, 255, 0.05);
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .timeline-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        /* 加载动画 */
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 22, 40, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .neural-loader {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            position: relative;
+        }
+
+        .neural-node {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            opacity: 0;
+            animation: neuralPulse 2s ease-in-out infinite;
+        }
+
+        .neural-node:nth-child(1) { top: 0; left: 34px; animation-delay: 0s; }
+        .neural-node:nth-child(2) { top: 20px; right: 0; animation-delay: 0.2s; }
+        .neural-node:nth-child(3) { bottom: 0; right: 20px; animation-delay: 0.4s; }
+        .neural-node:nth-child(4) { bottom: 20px; left: 0; animation-delay: 0.6s; }
+        .neural-node:nth-child(5) { top: 34px; left: 34px; animation-delay: 0.8s; }
+
+        @keyframes neuralPulse {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* 响应式 - 更新移动端样式 */
+        @media (max-width: 1200px) {
+            .detail-panel {
+                width: 350px;
+                right: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .memory-container {
+                flex-direction: column;
+            }
+
+            .left-panel {
+                width: 100%;
+                height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid var(--border-default);
+            }
+
+            .graph-panel {
+                height: 60vh;
+            }
+
+            .detail-panel {
+                position: fixed;
+                width: calc(100% - 40px);
+                max-width: none;
+                height: 80vh;
+                top: auto;
+                bottom: 0;
+                left: 20px;
+                right: 20px;
+                transform: translateY(calc(100% + 20px));
+                border-radius: 16px 16px 0 0;
+            }
+            
+            .detail-panel.active {
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    
+    <div class="memory-container">
+        <!-- 顶部栏 -->
+        <header class="header">
+            <div class="header-title">
+                <div class="header-title-icon">🧠</div>
+                <h1>数字人记忆体 - 口才训练助手</h1>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn">
+                    <span>📊</span>
+                    <span>导出数据</span>
+                </button>
+                <button class="header-btn">
+                    <span>🔄</span>
+                    <span>同步记忆</span>
+                </button>
+                <button class="header-btn">
+                    <span>⚙️</span>
+                    <span>设置</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 左侧面板 -->
+            <aside class="left-panel">
+                <!-- 记忆统计 -->
+                <div class="memory-stats">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">1,248</div>
+                            <div class="stat-label">记忆节点</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">3,521</div>
+                            <div class="stat-label">关系连接</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">856</div>
+                            <div class="stat-label">文档片段</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">92%</div>
+                            <div class="stat-label">向量覆盖</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 记忆类型过滤 -->
+                <div class="memory-filters">
+                    <h3 class="filter-title">记忆类型</h3>
+                    <div class="filter-list">
+                        <div class="filter-item active">
+                            <span class="filter-icon">💡</span>
+                            <span class="filter-name">概念知识</span>
+                            <span class="filter-count">423</span>
+                        </div>
+                        <div class="filter-item">
+                            <span class="filter-icon">👤</span>
+                            <span class="filter-name">人物关系</span>
+                            <span class="filter-count">156</span>
+                        </div>
+                        <div class="filter-item">
+                            <span class="filter-icon">📅</span>
+                            <span class="filter-name">事件记录</span>
+                            <span class="filter-count">289</span>
+                        </div>
+                        <div class="filter-item">
+                            <span class="filter-icon">🎯</span>
+                            <span class="filter-name">技能模式</span>
+                            <span class="filter-count">380</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 搜索和最近记忆 -->
+                <div class="memory-search">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" placeholder="搜索记忆内容...">
+                    </div>
+                    
+                    <h3 class="filter-title">最近记忆</h3>
+                    <div class="recent-memories">
+                        <div class="memory-item active">
+                            <div class="memory-time">2分钟前</div>
+                            <div class="memory-content">学习了"30秒电梯法则"的表达技巧，适用于时间紧张的会议场景</div>
+                        </div>
+                        <div class="memory-item">
+                            <div class="memory-time">15分钟前</div>
+                            <div class="memory-content">PREP结构：Point-Reason-Example-Point，用于有条理地表达观点</div>
+                        </div>
+                        <div class="memory-item">
+                            <div class="memory-time">1小时前</div>
+                            <div class="memory-content">用户反馈：需要更简洁的表达方式，会议时间通常很紧张</div>
+                        </div>
+                        <div class="memory-item">
+                            <div class="memory-time">3小时前</div>
+                            <div class="memory-content">演讲紧张的克服方法：深呼吸、提前准备、积极心理暗示</div>
+                        </div>
+                        <div class="memory-item">
+                            <div class="memory-time">1天前</div>
+                            <div class="memory-content">职场沟通的核心：清晰、简洁、有重点，避免冗长表达</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 中间图谱区域 -->
+            <div class="graph-panel">
+                <!-- 知识图谱画布 -->
+                <canvas id="knowledgeGraph"></canvas>
+                
+                <!-- 图谱控制 -->
+                <div class="graph-controls">
+                    <button class="control-btn" title="放大">➕</button>
+                    <button class="control-btn" title="缩小">➖</button>
+                    <button class="control-btn" title="重置视图">🎯</button>
+                    <button class="control-btn" title="全屏">⛶</button>
+                </div>
+
+                <!-- 图例说明 -->
+                <div class="graph-info">
+                    <div class="graph-info-title">节点类型</div>
+                    <div class="graph-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot concept"></span>
+                            <span>概念知识</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot person"></span>
+                            <span>人物</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot event"></span>
+                            <span>事件</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot skill"></span>
+                            <span>技能</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 加载动画 -->
+                <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+                    <div class="loading-content">
+                        <div class="neural-loader">
+                            <div class="neural-node"></div>
+                            <div class="neural-node"></div>
+                            <div class="neural-node"></div>
+                            <div class="neural-node"></div>
+                            <div class="neural-node"></div>
+                        </div>
+                        <div class="loading-text">正在加载记忆网络...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 添加遮罩层 -->
+            <div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+            
+            <!-- 右侧详情面板 -->
+            <aside class="detail-panel" id="detailPanel">
+                <div class="detail-header">
+                    <h2 class="detail-title">记忆详情</h2>
+                    <button class="close-detail" onclick="closeDetail()">×</button>
+                </div>
+                
+                <div class="detail-content">
+                    <!-- MongoDB 文档内容 -->
+                    <div class="detail-section">
+                        <h3 class="section-title">记忆内容 (MongoDB)</h3>
+                        <div class="document-content">
+                            <strong>30秒电梯法则</strong><br><br>
+                            这是一种快速、高效的表达方法，特别适合时间紧张的场合：<br>
+                            1. 一句话说明核心观点（5秒）<br>
+                            2. 列出三个关键理由（20秒）<br>
+                            3. 提出明确的行动建议（5秒）<br><br>
+                            示例："建议优先开发移动端。理由：一是移动用户占70%，二是竞品都在发力移动，三是开发成本更低。建议下周启动移动端项目。"
+                        </div>
+                    </div>
+
+                    <!-- Neo4j 关系 -->
+                    <div class="detail-section">
+                        <h3 class="section-title">知识关系 (Neo4j)</h3>
+                        <div class="relations-list">
+                            <div class="relation-item">
+                                <span>30秒电梯法则</span>
+                                <span class="relation-type">→ 适用于 →</span>
+                                <span>快节奏会议</span>
+                            </div>
+                            <div class="relation-item">
+                                <span>30秒电梯法则</span>
+                                <span class="relation-type">→ 包含 →</span>
+                                <span>三步结构</span>
+                            </div>
+                            <div class="relation-item">
+                                <span>30秒电梯法则</span>
+                                <span class="relation-type">→ 相关 →</span>
+                                <span>PREP结构</span>
+                            </div>
+                            <div class="relation-item">
+                                <span>用户反馈</span>
+                                <span class="relation-type">→ 促成 →</span>
+                                <span>30秒电梯法则</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chroma 向量相似度 -->
+                    <div class="detail-section">
+                        <h3 class="section-title">语义相似度 (Chroma)</h3>
+                        <div class="similarity-score">
+                            <div>
+                                <div class="score-label">与当前查询的相似度</div>
+                                <div class="score-bar">
+                                    <div class="score-fill"></div>
+                                </div>
+                            </div>
+                            <div class="score-value">0.85</div>
+                        </div>
+                    </div>
+
+                    <!-- 标签 -->
+                    <div class="detail-section">
+                        <h3 class="section-title">标签分类</h3>
+                        <div class="tags-list">
+                            <span class="tag">表达技巧</span>
+                            <span class="tag">会议沟通</span>
+                            <span class="tag">时间管理</span>
+                            <span class="tag">职场技能</span>
+                            <span class="tag">简洁表达</span>
+                        </div>
+                    </div>
+
+                    <!-- 相关记忆时间线 -->
+                    <div class="detail-section">
+                        <h3 class="section-title">记忆形成过程</h3>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-time">10:30</div>
+                                    <div>用户询问会议表达技巧</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-time">10:32</div>
+                                    <div>提供PREP结构方法</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-time">10:35</div>
+                                    <div>用户反馈需要更简洁</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-time">10:36</div>
+                                    <div>形成30秒电梯法则</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        // 等待DOM加载完成
+        window.addEventListener('DOMContentLoaded', function() {
+            // 获取canvas元素
+            const canvas = document.getElementById('knowledgeGraph');
+            const ctx = canvas.getContext('2d');
+            
+            // 初始化数据
+            let nodes = [];
+            let edges = [];
+            let animationFrame = 0;
+            
+            // 节点颜色
+            const nodeColors = {
+                concept: '#00D9FF',
+                person: '#00F5A0',
+                event: '#F7B731',
+                skill: '#7B68EE'
+            };
+            
+            // 初始化模拟数据
+            function initializeData() {
+                // 模拟的节点数据
+                nodes = [
+                    { id: 1, x: 400, y: 300, label: '30秒电梯法则', type: 'concept', size: 40 },
+                    { id: 2, x: 250, y: 200, label: 'PREP结构', type: 'concept', size: 35 },
+                    { id: 3, x: 550, y: 250, label: '快节奏会议', type: 'event', size: 30 },
+                    { id: 4, x: 350, y: 450, label: '用户反馈', type: 'person', size: 25 },
+                    { id: 5, x: 500, y: 400, label: '简洁表达', type: 'skill', size: 30 },
+                    { id: 6, x: 300, y: 350, label: '三步结构', type: 'concept', size: 25 },
+                    { id: 7, x: 600, y: 350, label: '时间管理', type: 'skill', size: 25 },
+                ];
+                
+                // 模拟的边数据
+                edges = [
+                    { from: 1, to: 2, label: '相关' },
+                    { from: 1, to: 3, label: '适用于' },
+                    { from: 4, to: 1, label: '促成' },
+                    { from: 1, to: 5, label: '实现' },
+                    { from: 1, to: 6, label: '包含' },
+                    { from: 1, to: 7, label: '涉及' },
+                    { from: 2, to: 5, label: '支持' },
+                ];
+            }
+            
+            // 设置画布大小
+            function resizeCanvas() {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                if (nodes.length > 0) {
+                    drawGraph();
+                }
+            }
+            
+            // 绘制图谱
+            function drawGraph() {
+                if (!ctx || !nodes || !edges || nodes.length === 0) return;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制边
+                ctx.strokeStyle = 'rgba(0, 217, 255, 0.3)';
+                ctx.lineWidth = 2;
+                
+                edges.forEach(edge => {
+                    const fromNode = nodes.find(n => n.id === edge.from);
+                    const toNode = nodes.find(n => n.id === edge.to);
+                    
+                    if (!fromNode || !toNode) return;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(fromNode.x, fromNode.y);
+                    ctx.lineTo(toNode.x, toNode.y);
+                    ctx.stroke();
+                    
+                    // 绘制边标签
+                    const midX = (fromNode.x + toNode.x) / 2;
+                    const midY = (fromNode.y + toNode.y) / 2;
+                    ctx.fillStyle = '#6C7293';
+                    ctx.font = '12px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(edge.label, midX, midY - 5);
+                });
+                
+                // 绘制节点
+                nodes.forEach(node => {
+                    // 节点圆形
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2);
+                    ctx.fillStyle = nodeColors[node.type];
+                    ctx.fill();
+                    
+                    // 节点光晕
+                    const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.size * 1.5);
+                    gradient.addColorStop(0, nodeColors[node.type] + '40');
+                    gradient.addColorStop(1, 'transparent');
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, node.size * 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 节点标签
+                    ctx.fillStyle = '#F5F5F5';
+                    ctx.font = '14px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(node.label, node.x, node.y);
+                });
+            }
+            
+            // 显示详情面板
+            function showDetail(node) {
+                const detailPanel = document.getElementById('detailPanel');
+                detailPanel.classList.add('active');
+                
+                // 更新详情内容
+                document.querySelector('.detail-title').textContent = `记忆详情 - ${node.label}`;
+            }
+            
+            // 节点点击事件
+            canvas.addEventListener('click', (e) => {
+                if (!nodes || nodes.length === 0) return;
+                
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // 检查是否点击了节点
+                nodes.forEach(node => {
+                    const distance = Math.sqrt(Math.pow(x - node.x, 2) + Math.pow(y - node.y, 2));
+                    if (distance <= node.size) {
+                        showDetail(node);
+                    }
+                });
+            });
+            
+            // 鼠标悬停效果
+            canvas.addEventListener('mousemove', (e) => {
+                if (!nodes || nodes.length === 0) return;
+                
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                let hovering = false;
+                nodes.forEach(node => {
+                    const distance = Math.sqrt(Math.pow(x - node.x, 2) + Math.pow(y - node.y, 2));
+                    if (distance <= node.size) {
+                        hovering = true;
+                    }
+                });
+                
+                canvas.style.cursor = hovering ? 'pointer' : 'default';
+            });
+            
+            // 模拟动态效果
+            function animate() {
+                if (!nodes || nodes.length === 0) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                animationFrame += 0.01;
+                
+                // 轻微的节点浮动效果
+                nodes.forEach((node, index) => {
+                    node.y += Math.sin(animationFrame + index) * 0.1;
+                });
+                
+                drawGraph();
+                requestAnimationFrame(animate);
+            }
+            
+            // 初始化
+            initializeData();
+            resizeCanvas();
+            
+            // 监听窗口大小变化
+            window.addEventListener('resize', resizeCanvas);
+            
+            // 启动动画
+            animate();
+            
+            // 将closeDetail函数暴露到全局
+            window.closeDetail = function() {
+                const detailPanel = document.getElementById('detailPanel');
+                detailPanel.classList.remove('active');
+            };
+        });
+    </script>
+</body>
+</html>

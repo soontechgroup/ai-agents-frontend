@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字人训练 - 口才训练助手</title>
+    <style>
+        :root {
+            /* 背景色系 */
+            --bg-primary: #0A1628;
+            --bg-secondary: #1A1A2E;
+            --bg-tertiary: #16213E;
+            --bg-overlay: rgba(10, 22, 40, 0.85);
+            
+            /* 强调色 */
+            --accent-primary: #00D9FF;
+            --accent-secondary: #7B68EE;
+            --accent-gradient: linear-gradient(135deg, #00D9FF 0%, #7B68EE 100%);
+            
+            /* 文字色 */
+            --text-primary: #F5F5F5;
+            --text-secondary: #B8BCC8;
+            --text-muted: #6C7293;
+            
+            /* 功能色 */
+            --success: #00F5A0;
+            --warning: #F7B731;
+            --error: #EE5A6F;
+            --info: #4FACFE;
+            
+            /* 边框和分割线 */
+            --border-default: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --border-focus: var(--accent-primary);
+            
+            /* 阴影 */
+            --shadow-sm: 0 1px 3px rgba(0, 217, 255, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 217, 255, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 217, 255, 0.15);
+            --shadow-xl: 0 20px 25px rgba(0, 217, 255, 0.2);
+            --glow-sm: 0 0 10px rgba(0, 217, 255, 0.3);
+            --glow-md: 0 0 20px rgba(0, 217, 255, 0.4);
+            
+            /* 动画 */
+            --duration-fast: 150ms;
+            --duration-normal: 300ms;
+            --duration-slow: 500ms;
+            --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 网格背景 */
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(0, 217, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 217, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 主容器 */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 顶部栏 */
+        .header {
+            height: 70px;
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-default);
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            gap: 2rem;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--duration-normal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: var(--accent-primary);
+            transform: translateX(-2px);
+        }
+
+        .header-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .training-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid var(--accent-primary);
+            border-radius: 8px;
+        }
+
+        .badge-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-gradient);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: var(--bg-primary);
+        }
+
+        .badge-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0.125rem;
+        }
+
+        .badge-title {
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .badge-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .training-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--warning);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+
+        /* 主要内容区 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* 左侧聊天区域 */
+        .chat-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-default);
+        }
+
+        /* 训练提示 */
+        .training-hint {
+            padding: 1.5rem 2rem;
+            background: rgba(123, 104, 238, 0.1);
+            border-bottom: 1px solid var(--border-default);
+            text-align: center;
+        }
+
+        .hint-title {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--accent-secondary);
+        }
+
+        .hint-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* 对话消息区 */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .messages-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: var(--border-default);
+            border-radius: 4px;
+        }
+
+        /* 消息项 */
+        .message {
+            display: flex;
+            gap: 1rem;
+            max-width: 80%;
+            animation: fadeIn var(--duration-normal);
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: var(--bg-primary);
+            flex-shrink: 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        .message.user .message-avatar {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-default);
+            box-shadow: none;
+        }
+
+        .message-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .message-role {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .message.user .message-role {
+            text-align: right;
+        }
+
+        .message-bubble {
+            padding: 1rem 1.25rem;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            border: 1px solid var(--border-default);
+            position: relative;
+        }
+
+        .message.user .message-bubble {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: var(--accent-primary);
+        }
+
+        .message-text {
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .message.user .message-text {
+            color: var(--text-primary);
+        }
+
+        /* 训练反馈标记 */
+        .feedback-marker {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: var(--bg-primary);
+            font-weight: bold;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* 输入区域 */
+        .input-section {
+            padding: 1.5rem 2rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-default);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            resize: none;
+            min-height: 50px;
+            max-height: 150px;
+            transition: all var(--duration-normal);
+            line-height: 1.5;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            padding: 0.875rem 1.5rem;
+            background: var(--accent-gradient);
+            border: none;
+            border-radius: 10px;
+            color: var(--bg-primary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--duration-normal);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md), var(--glow-sm);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 训练进度 */
+        .progress-section {
+            padding: 1rem 2rem;
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border-default);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .progress-info {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .progress-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .progress-label {
+            color: var(--text-secondary);
+        }
+
+        .progress-value {
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            width: 300px;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-gradient);
+            width: 35%;
+            transition: width var(--duration-slow);
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 30px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3));
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-30px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* 右侧思考过程 */
+        .thinking-panel {
+            width: 400px;
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .thinking-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-default);
+            background: rgba(26, 26, 46, 0.8);
+        }
+
+        .thinking-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .thinking-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .thinking-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .thinking-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .thinking-content::-webkit-scrollbar-thumb {
+            background: var(--border-default);
+            border-radius: 3px;
+        }
+
+        /* 思考过程项 */
+        .thinking-item {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            animation: slideIn var(--duration-normal);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .thinking-stage {
+            font-size: 0.75rem;
+            color: var(--accent-secondary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .thinking-detail {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* 思考状态指示器 */
+        .thinking-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: rgba(123, 104, 238, 0.1);
+            border: 1px solid var(--accent-secondary);
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .thinking-dots {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .thinking-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-secondary);
+            animation: thinking-pulse 1.4s ease-in-out infinite;
+        }
+
+        .thinking-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .thinking-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes thinking-pulse {
+            0%, 80%, 100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            40% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* 等待状态 */
+        .waiting-message {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .waiting-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            position: relative;
+        }
+
+        /* 大脑图标动画 */
+        .brain-icon {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5'%3E%3Cpath d='M12 2C9.5 2 7.5 4 7.5 6.5c0 1-.5 2-1.5 2.5-1 .5-2 1.5-2 3 0 1 .5 2 1.5 2.5.5.25.5 1 0 1.25C4.5 16.25 4 17.25 4 18.5c0 2 1.5 3.5 3.5 3.5 1 0 2-.5 2.5-1.5.5-1 1.5-1.5 2.5-1.5s2 .5 2.5 1.5c.5 1 1.5 1.5 2.5 1.5 2 0 3.5-1.5 3.5-3.5 0-1.25-.5-2.25-1.5-2.75-.5-.25-.5-1 0-1.25 1-.5 1.5-1.5 1.5-2.5 0-1.5-1-2.5-2-3-1-.5-1.5-1.5-1.5-2.5C16.5 4 14.5 2 12 2z'/%3E%3C/svg%3E") center/contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5'%3E%3Cpath d='M12 2C9.5 2 7.5 4 7.5 6.5c0 1-.5 2-1.5 2.5-1 .5-2 1.5-2 3 0 1 .5 2 1.5 2.5.5.25.5 1 0 1.25C4.5 16.25 4 17.25 4 18.5c0 2 1.5 3.5 3.5 3.5 1 0 2-.5 2.5-1.5.5-1 1.5-1.5 2.5-1.5s2 .5 2.5 1.5c.5 1 1.5 1.5 2.5 1.5 2 0 3.5-1.5 3.5-3.5 0-1.25-.5-2.25-1.5-2.75-.5-.25-.5-1 0-1.25 1-.5 1.5-1.5 1.5-2.5 0-1.5-1-2.5-2-3-1-.5-1.5-1.5-1.5-2.5C16.5 4 14.5 2 12 2z'/%3E%3C/svg%3E") center/contain no-repeat;
+            animation: brainPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes brainPulse {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1.05);
+            }
+        }
+
+        /* 神经网络连接动画 */
+        .neural-connections {
+            position: absolute;
+            inset: -10px;
+            opacity: 0.3;
+        }
+
+        .neural-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            animation: neuralFlow 4s ease-in-out infinite;
+        }
+
+        .neural-dot:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .neural-dot:nth-child(2) {
+            top: 80%;
+            left: 20%;
+            animation-delay: 0.5s;
+        }
+
+        .neural-dot:nth-child(3) {
+            top: 50%;
+            right: 10%;
+            animation-delay: 1s;
+        }
+
+        .neural-dot:nth-child(4) {
+            bottom: 20%;
+            right: 30%;
+            animation-delay: 1.5s;
+        }
+
+        @keyframes neuralFlow {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .waiting-text {
+            font-size: 0.9375rem;
+            line-height: 1.5;
+        }
+
+        .waiting-subtitle {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            opacity: 0.8;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .thinking-panel {
+                width: 350px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .chat-section {
+                border-right: none;
+                border-bottom: 1px solid var(--border-default);
+                height: 60vh;
+            }
+
+            .thinking-panel {
+                width: 100%;
+                height: 40vh;
+            }
+
+            .header {
+                padding: 0 1rem;
+            }
+
+            .header-info {
+                gap: 1rem;
+            }
+
+            .badge-text {
+                display: none;
+            }
+
+            .training-status span:not(.status-indicator) {
+                display: none;
+            }
+
+            .progress-section {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .progress-bar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    
+    <div class="app-container">
+        <!-- 顶部栏 -->
+        <header class="header">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <div class="header-info">
+                <div class="training-badge">
+                    <div class="badge-icon">🎤</div>
+                    <div class="badge-text">
+                        <div class="badge-title">口才训练助手</div>
+                        <div class="badge-subtitle">演讲技巧优化</div>
+                    </div>
+                </div>
+                <div class="training-status">
+                    <span class="status-indicator"></span>
+                    <span>训练进行中</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 左侧聊天区域 -->
+            <div class="chat-section">
+                <!-- 训练提示 -->
+                <div class="training-hint">
+                    <div class="hint-title">🎯 训练模式已开启</div>
+                    <div class="hint-text">请通过对话来训练你的数字人。每次对话都会帮助它更好地理解和学习你期望的行为模式。</div>
+                </div>
+
+                <!-- 对话消息 -->
+                <div class="messages-container">
+                    <!-- 系统消息 -->
+                    <div class="message">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            <div class="message-role">系统</div>
+                            <div class="message-bubble">
+                                <div class="message-text">训练已开始。请开始与数字人对话，通过纠正和引导来帮助它学习。每个高质量的对话都会提升训练效果。</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI消息 -->
+                    <div class="message">
+                        <div class="message-avatar">🎤</div>
+                        <div class="message-content">
+                            <div class="message-role">口才训练助手</div>
+                            <div class="message-bubble">
+                                <div class="message-text">你好！我是你的口才训练助手。请问你想要提升哪方面的口才能力呢？是公众演讲、职场沟通还是日常交流？</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 用户消息 -->
+                    <div class="message user">
+                        <div class="message-avatar">我</div>
+                        <div class="message-content">
+                            <div class="message-role">训练者</div>
+                            <div class="message-bubble">
+                                <div class="message-text">我想学习如何在会议上更有条理地表达观点</div>
+                                <div class="feedback-marker">✓</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI回复 -->
+                    <div class="message">
+                        <div class="message-avatar">🎤</div>
+                        <div class="message-content">
+                            <div class="message-role">口才训练助手</div>
+                            <div class="message-bubble">
+                                <div class="message-text">在会议上有条理地表达观点确实很重要！我建议你使用"PREP"结构：
+
+1. **P (Point)** - 先明确你的核心观点
+2. **R (Reason)** - 说明支持观点的理由
+3. **E (Example)** - 举具体的例子
+4. **P (Point)** - 最后重申观点
+
+比如："我认为我们应该调整产品策略（观点），因为市场数据显示用户需求在变化（理由），上个月的用户调研就发现...（例子），所以调整策略势在必行（重申）。"
+
+要不要现在练习一下？</div>
+                                <div class="feedback-marker">✓</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 更多对话... -->
+                    <div class="message user">
+                        <div class="message-avatar">我</div>
+                        <div class="message-content">
+                            <div class="message-role">训练者</div>
+                            <div class="message-bubble">
+                                <div class="message-text">好的，但是能不能再简洁一些？有时候会议时间很紧张</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI学习并调整 -->
+                    <div class="message">
+                        <div class="message-avatar">🎤</div>
+                        <div class="message-content">
+                            <div class="message-role">口才训练助手</div>
+                            <div class="message-bubble">
+                                <div class="message-text">明白了！时间紧张时，可以用"30秒电梯法则"：
+
+1. **一句话观点**（5秒）
+2. **三个关键理由**（20秒）
+3. **行动建议**（5秒）
+
+例如："建议优先开发移动端。理由：一是移动用户占70%，二是竞品都在发力移动，三是开发成本更低。建议下周启动移动端项目。"
+
+简洁有力，适合快节奏会议！</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 输入区域 -->
+                <div class="input-section">
+                    <div class="input-container">
+                        <div class="input-wrapper">
+                            <textarea 
+                                class="chat-input" 
+                                placeholder="输入训练对话内容..."
+                                rows="1"
+                            ></textarea>
+                        </div>
+                        <button class="send-btn">
+                            <span>发送</span>
+                            <span>↵</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 训练进度 -->
+                <div class="progress-section">
+                    <div class="progress-info">
+                        <div class="progress-item">
+                            <span class="progress-label">对话轮次：</span>
+                            <span class="progress-value">12</span>
+                        </div>
+                        <div class="progress-item">
+                            <span class="progress-label">有效训练：</span>
+                            <span class="progress-value">8</span>
+                        </div>
+                        <div class="progress-item">
+                            <span class="progress-label">训练质量：</span>
+                            <span class="progress-value">优秀</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧思考过程 -->
+            <aside class="thinking-panel">
+                <div class="thinking-header">
+                    <h2 class="thinking-title">
+                        <span>🧠</span>
+                        <span>ReAct 思考过程</span>
+                    </h2>
+                </div>
+                <div class="thinking-content" id="thinkingContent">
+                    <!-- 等待状态 -->
+                    <div class="waiting-message" id="waitingMessage">
+                        <div class="waiting-icon">
+                            <div class="brain-icon"></div>
+                            <div class="neural-connections">
+                                <span class="neural-dot"></span>
+                                <span class="neural-dot"></span>
+                                <span class="neural-dot"></span>
+                                <span class="neural-dot"></span>
+                            </div>
+                        </div>
+                        <div class="waiting-text">AI 思维待激活</div>
+                        <div class="waiting-subtitle">开始对话后查看思考过程</div>
+                    </div>
+
+                    <!-- 思考过程内容（默认隐藏） -->
+                    <div id="thinkingProcess" style="display: none;">
+                        <!-- 当前思考状态 -->
+                        <div class="thinking-status">
+                            <span>正在分析</span>
+                            <div class="thinking-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+
+                        <!-- 思考步骤 -->
+                        <div class="thinking-item">
+                            <div class="thinking-stage">理解阶段</div>
+                            <div class="thinking-detail">用户询问如何在会议中有条理地表达观点，这是一个关于职场沟通技巧的问题。</div>
+                        </div>
+
+                        <div class="thinking-item">
+                            <div class="thinking-stage">分析阶段</div>
+                            <div class="thinking-detail">需要提供一个结构化的方法，帮助用户在有限时间内清晰表达。PREP结构是一个经典且有效的框架。</div>
+                        </div>
+
+                        <div class="thinking-item">
+                            <div class="thinking-stage">调整阶段</div>
+                            <div class="thinking-detail">用户反馈需要更简洁的方案，说明会议时间紧张。需要提供一个更精简的表达框架。</div>
+                        </div>
+
+                        <div class="thinking-item">
+                            <div class="thinking-stage">优化阶段</div>
+                            <div class="thinking-detail">采用"30秒电梯法则"，将表达压缩到最精华的部分，符合快节奏会议的需求。</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script>
+        // 返回
+        function goBack() {
+            console.log('返回个人中心');
+        }
+
+        // 自动调整输入框高度
+        const textarea = document.querySelector('.chat-input');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        });
+
+        // 发送消息
+        const sendBtn = document.querySelector('.send-btn');
+        const messagesContainer = document.querySelector('.messages-container');
+        const thinkingContent = document.getElementById('thinkingContent');
+        const waitingMessage = document.getElementById('waitingMessage');
+        const thinkingProcess = document.getElementById('thinkingProcess');
+        
+        let messageCount = 6; // 已有消息数
+
+        sendBtn.addEventListener('click', sendMessage);
+        textarea.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const text = textarea.value.trim();
+            if (!text) return;
+
+            // 添加用户消息
+            const userMessage = createMessage('user', text, '训练者', '我');
+            messagesContainer.appendChild(userMessage);
+
+            // 清空输入
+            textarea.value = '';
+            textarea.style.height = 'auto';
+
+            // 显示思考过程
+            showThinkingProcess();
+            
+            // 滚动到底部
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // 模拟AI回复
+            setTimeout(() => {
+                const aiResponses = [
+                    "很好的问题！让我根据你的需求来调整我的回答方式...",
+                    "我理解了，下次我会注意这一点。让我重新组织一下...",
+                    "谢谢你的反馈！这样确实更清晰。我来演示一下...",
+                    "明白了！我会记住这个技巧。那么接下来...",
+                ];
+                
+                const response = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+                const aiMessage = createMessage('ai', response, '口才训练助手', '🎤');
+                messagesContainer.appendChild(aiMessage);
+                
+                // 更新进度
+                updateProgress();
+                
+                // 滚动到底部
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                // 隐藏思考过程
+                setTimeout(() => {
+                    hideThinkingProcess();
+                }, 1000);
+            }, 2000);
+        }
+
+        function createMessage(type, text, role, avatar) {
+            const message = document.createElement('div');
+            message.className = `message ${type === 'user' ? 'user' : ''}`;
+            
+            // 随机决定是否添加反馈标记（模拟有效训练）
+            const hasFeedback = Math.random() > 0.3;
+            
+            message.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                    <div class="message-role">${role}</div>
+                    <div class="message-bubble">
+                        <div class="message-text">${text}</div>
+                        ${hasFeedback ? '<div class="feedback-marker">✓</div>' : ''}
+                    </div>
+                </div>
+            `;
+            
+            return message;
+        }
+
+        function updateProgress() {
+            messageCount++;
+            
+            // 更新对话轮次
+            document.querySelector('.progress-value').textContent = Math.floor(messageCount / 2);
+            
+            // 更新有效训练数
+            const effectiveCount = Math.floor(messageCount / 2 * 0.7);
+            document.querySelectorAll('.progress-value')[1].textContent = effectiveCount;
+            
+            // 更新进度条
+            const progress = Math.min((messageCount / 30) * 100, 90);
+            document.querySelector('.progress-fill').style.width = progress + '%';
+        }
+
+        // 显示思考过程
+        function showThinkingProcess() {
+            waitingMessage.style.display = 'none';
+            thinkingProcess.style.display = 'block';
+            
+            // 添加新的思考步骤动画
+            const thinkingSteps = [
+                { stage: '理解阶段', detail: '分析用户输入的意图和需求...' },
+                { stage: '检索阶段', detail: '从知识库中查找相关信息...' },
+                { stage: '生成阶段', detail: '构建符合用户需求的回复...' },
+                { stage: '优化阶段', detail: '调整语言风格和表达方式...' }
+            ];
+            
+            // 清空现有思考步骤（保留状态指示器）
+            const existingItems = thinkingProcess.querySelectorAll('.thinking-item');
+            existingItems.forEach(item => item.remove());
+            
+            // 逐步添加思考步骤
+            thinkingSteps.forEach((step, index) => {
+                setTimeout(() => {
+                    const item = document.createElement('div');
+                    item.className = 'thinking-item';
+                    item.innerHTML = `
+                        <div class="thinking-stage">${step.stage}</div>
+                        <div class="thinking-detail">${step.detail}</div>
+                    `;
+                    thinkingProcess.appendChild(item);
+                    
+                    // 滚动到最新内容
+                    thinkingContent.scrollTop = thinkingContent.scrollHeight;
+                }, index * 400);
+            });
+        }
+
+        // 隐藏思考过程
+        function hideThinkingProcess() {
+            setTimeout(() => {
+                waitingMessage.style.display = 'block';
+                thinkingProcess.style.display = 'none';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
