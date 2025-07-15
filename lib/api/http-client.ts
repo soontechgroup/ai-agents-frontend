@@ -79,10 +79,10 @@ class HttpClient {
     } = config;
 
     // 构建请求头
-    const requestHeaders: HeadersInit = {
+    const requestHeaders: Record<string, string> = {
       ...this.defaultHeaders,
       ...headers,
-    };
+    } as Record<string, string>;
 
     // 添加认证 token
     if (withAuth) {
