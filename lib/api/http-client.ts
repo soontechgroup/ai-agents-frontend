@@ -2,7 +2,7 @@ import { ApiResponse, ApiError, RequestConfig } from '@/lib/types/api';
 
 class HttpClient {
   private baseURL: string;
-  private defaultHeaders: HeadersInit;
+  private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string = '') {
     this.baseURL = baseURL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -78,17 +78,22 @@ class HttpClient {
       ...restConfig
     } = config;
 
-    // 构建请求头
-    const requestHeaders: HeadersInit = {
-      ...this.defaultHeaders,
-      ...headers,
-    };
+    // 构建请求头 - 安全地处理 headers
+    const requestHeaders = new Headers(this.defaultHeaders);
+    
+    // 合并传入的 headers
+    if (headers) {
+      const headersObj = new Headers(headers);
+      headersObj.forEach((value, key) => {
+        requestHeaders.set(key, value);
+      });
+    }
 
     // 添加认证 token
     if (withAuth) {
       const token = this.getToken();
       if (token) {
-        requestHeaders['Authorization'] = `Bearer ${token}`;
+        requestHeaders.set('Authorization', `Bearer ${token}`);
       }
     }
 
