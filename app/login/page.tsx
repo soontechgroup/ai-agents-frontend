@@ -110,7 +110,7 @@ export default function LoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="请输入邮箱/手机号/用户名"
+                placeholder="请输入邮箱或用户名"
                 required
                 disabled={loading}
                 className="w-full px-4 py-3.5 rounded-[10px] text-[var(--text-primary)] placeholder-[var(--text-muted)] transition-all duration-300 focus:outline-none focus:ring-0"

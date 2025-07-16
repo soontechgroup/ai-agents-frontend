@@ -10,8 +10,6 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    phone: '',
-    verifyCode: '',
     password: '',
     confirmPassword: '',
     full_name: '',
@@ -20,7 +18,6 @@ export default function RegisterPage() {
   
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [countdown, setCountdown] = useState(0);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isRippling, setIsRippling] = useState(false);
   
@@ -43,9 +40,6 @@ export default function RegisterPage() {
     if (!formData.username) errors.username = '请输入用户名';
     if (!formData.email) errors.email = '请输入邮箱地址';
     if (!/^\S+@\S+\.\S+$/.test(formData.email)) errors.email = '请输入有效的邮箱地址';
-    if (!formData.phone) errors.phone = '请输入手机号';
-    if (!/^1[3-9]\d{9}$/.test(formData.phone)) errors.phone = '请输入有效的手机号';
-    if (!formData.verifyCode) errors.verifyCode = '请输入验证码';
     if (!formData.password) errors.password = '请设置密码';
     if (formData.password.length < 8 || formData.password.length > 20) {
       errors.password = '密码长度需要在8-20位之间';
@@ -59,27 +53,6 @@ export default function RegisterPage() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleGetVerifyCode = () => {
-    if (countdown > 0) return;
-    
-    // 验证手机号
-    if (!/^1[3-9]\d{9}$/.test(formData.phone)) {
-      setFormErrors({ ...formErrors, phone: '请输入有效的手机号' });
-      return;
-    }
-    
-    // 模拟发送验证码
-    setCountdown(60);
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,16 +60,11 @@ export default function RegisterPage() {
     if (!validateForm()) return;
 
     try {
-      // 暂时将手机号存储在 full_name 字段中（后续需要后端支持）
-      const fullNameWithPhone = formData.full_name ? 
-        `${formData.full_name} (${formData.phone})` : 
-        `手机号: ${formData.phone}`;
-        
       await register(
         formData.username,
         formData.email,
         formData.password,
-        fullNameWithPhone
+        formData.full_name || ''
       );
       
       // 注册成功后跳转到登录页
@@ -209,58 +177,20 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* 手机号 */}
-              <div className={`mb-6 ${formErrors.phone ? 'error' : ''}`}>
+              {/* 全名（可选） */}
+              <div className="mb-6">
                 <label className="block text-sm text-[#B8BCC8] mb-2 font-medium">
-                  手机号
+                  全名（可选）
                 </label>
                 <input
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
+                  name="full_name"
+                  type="text"
+                  value={formData.full_name}
                   onChange={handleChange}
-                  className={`w-full px-4 py-[14px] bg-[#1A1A2E] border ${
-                    formErrors.phone ? 'border-[#EE5A6F]' : 'border-white/10'
-                  } rounded-[10px] text-[#F5F5F5] placeholder:text-[#6C7293] text-base focus:outline-none focus:border-[#00D9FF] focus:bg-[#1A1A2E]/80 focus:input-focus transition-all duration-300`}
-                  placeholder="请输入手机号"
+                  className="w-full px-4 py-[14px] bg-[#1A1A2E] border border-white/10 rounded-[10px] text-[#F5F5F5] placeholder:text-[#6C7293] text-base focus:outline-none focus:border-[#00D9FF] focus:bg-[#1A1A2E]/80 focus:input-focus transition-all duration-300"
+                  placeholder="请输入您的姓名"
                   disabled={loading}
                 />
-                {formErrors.phone && (
-                  <span className="text-[#EE5A6F] text-xs mt-1 block">{formErrors.phone}</span>
-                )}
-              </div>
-
-              {/* 验证码 */}
-              <div className={`mb-6 ${formErrors.verifyCode ? 'error' : ''}`}>
-                <label className="block text-sm text-[#B8BCC8] mb-2 font-medium">
-                  验证码
-                </label>
-                <div className="flex gap-4">
-                  <input
-                    name="verifyCode"
-                    type="text"
-                    value={formData.verifyCode}
-                    onChange={handleChange}
-                    className={`flex-1 px-4 py-[14px] bg-[#1A1A2E] border ${
-                      formErrors.verifyCode ? 'border-[#EE5A6F]' : 'border-white/10'
-                    } rounded-[10px] text-[#F5F5F5] placeholder:text-[#6C7293] text-base focus:outline-none focus:border-[#00D9FF] focus:bg-[#1A1A2E]/80 focus:input-focus transition-all duration-300`}
-                    placeholder="请输入验证码"
-                    disabled={loading}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleGetVerifyCode}
-                    disabled={countdown > 0 || loading}
-                    className={`px-6 py-[14px] bg-transparent border border-[#00D9FF] rounded-[10px] text-[#00D9FF] font-medium transition-all duration-300 whitespace-nowrap ${
-                      countdown > 0 || loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#00D9FF]/10 hover:shadow-[0_0_10px_rgba(0,217,255,0.3)] cursor-pointer'
-                    }`}
-                  >
-                    {countdown > 0 ? `${countdown}s后重试` : '获取验证码'}
-                  </button>
-                </div>
-                {formErrors.verifyCode && (
-                  <span className="text-[#EE5A6F] text-xs mt-1 block">{formErrors.verifyCode}</span>
-                )}
               </div>
 
               {/* 密码 */}
