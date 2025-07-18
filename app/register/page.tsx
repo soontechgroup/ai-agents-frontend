@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/auth-provider';
@@ -21,8 +21,15 @@ export default function RegisterPage() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isRippling, setIsRippling] = useState(false);
   
-  const { register, error, success, loading } = useAuth();
+  const { register, error, success, loading, resetMessages } = useAuth();
   const router = useRouter();
+  
+  // 页面卸载时清除消息
+  useEffect(() => {
+    return () => {
+      resetMessages();
+    };
+  }, [resetMessages]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -38,11 +45,19 @@ export default function RegisterPage() {
     const errors: Record<string, string> = {};
     
     if (!formData.username) errors.username = '请输入用户名';
+    if (formData.username && formData.username.length < 3) {
+      errors.username = '用户名至少需要3个字符';
+    }
+    if (formData.username && !/^[a-zA-Z0-9_-]+$/.test(formData.username)) {
+      errors.username = '用户名只能包含字母、数字、下划线和连字符';
+    }
     if (!formData.email) errors.email = '请输入邮箱地址';
-    if (!/^\S+@\S+\.\S+$/.test(formData.email)) errors.email = '请输入有效的邮箱地址';
+    if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) {
+      errors.email = '请输入有效的邮箱地址';
+    }
     if (!formData.password) errors.password = '请设置密码';
-    if (formData.password.length < 8 || formData.password.length > 20) {
-      errors.password = '密码长度需要在8-20位之间';
+    if (formData.password.length < 6) {
+      errors.password = '密码长度至少需要6位';
     }
     if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = '两次输入的密码不一致';
@@ -60,17 +75,24 @@ export default function RegisterPage() {
     if (!validateForm()) return;
 
     try {
-      await register(
+      const result = await register(
         formData.username,
         formData.email,
         formData.password,
         formData.full_name || ''
       );
       
-      // 注册成功后跳转到登录页
-      setTimeout(() => {
-        router.push('/login');
-      }, 2000);
+      // 如果自动登录成功，跳转到首页
+      if (result?.success) {
+        setTimeout(() => {
+          router.push('/');
+        }, 1500);
+      } else {
+        // 如果只是注册成功但自动登录失败，跳转到登录页
+        setTimeout(() => {
+          router.push('/login');
+        }, 2000);
+      }
     } catch (error) {
       // 错误已在 AuthProvider 中处理
     }
@@ -207,7 +229,7 @@ export default function RegisterPage() {
                     className={`w-full px-4 py-[14px] pr-12 bg-[#1A1A2E] border ${
                       formErrors.password ? 'border-[#EE5A6F]' : 'border-white/10'
                     } rounded-[10px] text-[#F5F5F5] placeholder:text-[#6C7293] text-base focus:outline-none focus:border-[#00D9FF] focus:bg-[#1A1A2E]/80 focus:input-focus transition-all duration-300`}
-                    placeholder="请设置密码（8-20位）"
+                    placeholder="请设置密码（至少6位）"
                     disabled={loading}
                   />
                   <button

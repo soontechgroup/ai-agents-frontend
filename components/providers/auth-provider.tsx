@@ -33,8 +33,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const userData = await authService.getCurrentUser();
-      setUser(userData);
+      const response = await authService.getCurrentUser();
+      // 处理后端响应格式
+      if (response.data) {
+        setUser(response.data);
+      } else if (response.id) {
+        // 如果直接返回用户数据
+        setUser(response);
+      }
       
       // 设置 cookie 用于中间件
       document.cookie = `token=${token}; path=/; max-age=86400; SameSite=Lax`;
@@ -87,14 +93,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSuccess(null);
 
     try {
-      await authService.register({
+      const response = await authService.register({
         username,
         email,
         password,
         full_name,
       });
 
-      setSuccess('注册成功！请登录。');
+      // 检查响应是否成功
+      if (response.code === 200 || response.data) {
+        setSuccess('注册成功！正在自动登录...');
+        
+        // 注册成功后自动登录
+        try {
+          const loginResponse = await authService.login({ username, password });
+          
+          if (loginResponse.data?.access_token) {
+            localStorage.setItem('token', loginResponse.data.access_token);
+            document.cookie = `token=${loginResponse.data.access_token}; path=/; max-age=86400; SameSite=Lax`;
+            
+            // 获取用户信息
+            await verifyToken();
+            setSuccess('注册成功，已自动登录！');
+            
+            // 返回成功，让页面处理跳转
+            return { success: true };
+          }
+        } catch (loginError) {
+          // 如果自动登录失败，仍然算注册成功
+          console.error('Auto login failed:', loginError);
+          setSuccess('注册成功！请手动登录。');
+        }
+      } else {
+        setError(response.message || '注册失败');
+      }
     } catch (error) {
       const apiError = error as ApiError;
       setError(apiError.message || '注册失败');

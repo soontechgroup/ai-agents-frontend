@@ -26,8 +26,8 @@ class AuthService {
   /**
    * 用户注册
    */
-  async register(data: RegisterDto): Promise<ApiResponse<User>> {
-    return httpClient.post<ApiResponse<User>>(
+  async register(data: RegisterDto): Promise<any> {
+    return httpClient.post<any>(
       `${this.basePath}/register`,
       data
     );
@@ -36,22 +36,18 @@ class AuthService {
   /**
    * 用户登录
    */
-  async login(data: LoginDto): Promise<ApiResponse<LoginResponse>> {
-    // FastAPI OAuth2 需要表单格式
-    return httpClient.postForm<ApiResponse<LoginResponse>>(
+  async login(data: LoginDto): Promise<any> {
+    return httpClient.post<any>(
       `${this.basePath}/login`,
-      {
-        username: data.username,
-        password: data.password,
-      }
+      data
     );
   }
 
   /**
    * 获取当前用户信息
    */
-  async getCurrentUser(): Promise<User> {
-    return httpClient.get<User>(`${this.basePath}/me`);
+  async getCurrentUser(): Promise<any> {
+    return httpClient.get<any>(`${this.basePath}/me`);
   }
 
   /**

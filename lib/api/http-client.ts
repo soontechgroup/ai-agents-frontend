@@ -58,8 +58,43 @@ class HttpClient {
 
   // 创建错误对象
   private createError(data: any, status: number): ApiError {
+    let message = 'An error occurred';
+    
+    // 处理不同的错误格式
+    if (data.error) {
+      message = data.error;
+    } else if (data.message) {
+      message = data.message;
+    } else if (data.detail) {
+      // 处理 FastAPI 的验证错误
+      if (Array.isArray(data.detail)) {
+        // 将验证错误数组转换为可读的错误信息
+        const errors = data.detail.map((err: any) => {
+          const field = err.loc[err.loc.length - 1];
+          // 简化错误消息
+          let msg = err.msg;
+          if (msg.includes('String should have at least')) {
+            const minLength = err.ctx?.min_length;
+            msg = `至少需要 ${minLength} 个字符`;
+          } else if (msg.includes('valid email address')) {
+            msg = '邮箱格式不正确';
+          } else if (msg.includes('String should have at most')) {
+            const maxLength = err.ctx?.max_length;
+            msg = `最多 ${maxLength} 个字符`;
+          }
+          return `${field}: ${msg}`;
+        });
+        // 如果有多个错误，只显示第一个
+        message = errors.length > 1 
+          ? `验证失败: ${errors[0]} (还有 ${errors.length - 1} 个错误)`
+          : errors[0];
+      } else {
+        message = data.detail;
+      }
+    }
+    
     return {
-      message: data.error || data.detail || data.message || 'An error occurred',
+      message,
       status,
       details: data,
     };
