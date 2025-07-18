@@ -53,7 +53,8 @@ export default function HomePage() {
 
       <Navbar />
 
-      <main className="max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
+      <main className="w-full py-4 sm:py-6 lg:py-8 pb-24 lg:pb-8">
+        <div className="max-w-[1200px] mx-auto px-6 sm:px-8 lg:px-12">
         {/* Hero Section */}
         <section className="text-center py-8 lg:py-16 mb-8 lg:mb-16">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 gradient-text">
@@ -134,7 +135,15 @@ export default function HomePage() {
         </section>
 
         {/* Digital Humans Grid */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
+        <section 
+          className="w-full p-6 sm:p-8 rounded-2xl"
+          style={{
+            backgroundColor: 'rgba(22, 33, 62, 0.3)',
+            border: '1px solid var(--border-default)'
+          }}
+        >
+          <h2 className="text-2xl font-semibold mb-6 text-[var(--text-primary)]">热门数字人</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {digitalHumans.map((human) => (
             <DigitalHumanCard
               key={human.id}
@@ -147,7 +156,9 @@ export default function HomePage() {
             description=""
             isCreateNew={true}
           />
+          </div>
         </section>
+        </div>
       </main>
 
       <BottomNav />

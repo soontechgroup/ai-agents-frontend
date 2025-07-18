@@ -28,7 +28,7 @@ export default function DigitalHumanCard({
     return (
       <Link
         href="/create"
-        className="block min-h-[400px] rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center cursor-pointer"
+        className="block w-full min-h-[400px] rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center cursor-pointer"
         style={{
           backgroundColor: 'rgba(22, 33, 62, 0.5)',
           borderColor: 'var(--border-default)'
@@ -51,7 +51,7 @@ export default function DigitalHumanCard({
   return (
     <Link
       href={`/digital-human/${id}`}
-      className="block rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer relative"
+      className="block w-full rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer relative"
       style={{
         backgroundColor: 'var(--bg-tertiary)',
         border: '1px solid var(--border-default)'

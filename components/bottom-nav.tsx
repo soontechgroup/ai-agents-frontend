@@ -16,13 +16,14 @@ export default function BottomNav() {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 lg:hidden z-[100] backdrop-blur-[20px]"
+      className="fixed bottom-0 left-0 right-0 w-full lg:hidden z-[100] backdrop-blur-[20px]"
       style={{
         backgroundColor: 'rgba(26, 26, 46, 0.95)',
-        borderTop: '1px solid var(--border-default)'
+        borderTop: '1px solid var(--border-default)',
+        boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.1)'
       }}
     >
-      <div className="max-w-[600px] mx-auto px-4 py-4">
+      <div className="w-full px-4 py-2">
         <div className="flex justify-around items-center">
           {navItems.map((item) => (
             <Link
@@ -38,7 +39,7 @@ export default function BottomNav() {
               }}
             >
               {item.icon}
-              <span className="text-xs hidden sm:block">{item.label}</span>
+              <span className="text-xs">{item.label}</span>
             </Link>
           ))}
 
