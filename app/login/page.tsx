@@ -7,7 +7,7 @@ import { useAuth } from '@/components/providers/auth-provider';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
@@ -18,7 +18,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(username, password);
+      await login(email, password);
       router.push('/');
     } catch (error) {
       // 错误已在 AuthProvider 中处理
@@ -101,16 +101,16 @@ export default function LoginPage() {
 
           {/* 登录表单 */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 账号 */}
+            {/* 邮箱 */}
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                账号
+                邮箱
               </label>
               <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="请输入邮箱或用户名"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="请输入邮箱地址"
                 required
                 disabled={loading}
                 className="w-full px-4 py-3.5 rounded-[10px] text-[var(--text-primary)] placeholder-[var(--text-muted)] transition-all duration-300 focus:outline-none focus:ring-0"

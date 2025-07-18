@@ -59,13 +59,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [verifyToken]);
 
   // 登录
-  const login = async (username: string, password: string) => {
+  const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      const response = await authService.login({ username, password });
+      const response = await authService.login({ email, password });
 
       if (response.data?.access_token) {
         localStorage.setItem('token', response.data.access_token);
@@ -87,14 +87,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // 注册
-  const register = async (username: string, email: string, password: string, full_name?: string) => {
+  const register = async (email: string, password: string, full_name?: string) => {
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
       const response = await authService.register({
-        username,
         email,
         password,
         full_name,
@@ -106,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // 注册成功后自动登录
         try {
-          const loginResponse = await authService.login({ username, password });
+          const loginResponse = await authService.login({ email, password });
           
           if (loginResponse.data?.access_token) {
             localStorage.setItem('token', loginResponse.data.access_token);
@@ -137,15 +136,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // 登出
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
+      console.log('Logout called in AuthProvider');
+      setLoading(true);
+      
+      // 调用 auth service 的 logout
       await authService.logout();
+      
+      // 清除用户状态
       setUser(null);
       setSuccess('已成功登出');
+      
+      console.log('User cleared, redirecting to login page');
+      
+      // 使用 window.location 进行硬跳转，确保所有状态被清除
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 100);
     } catch (error) {
       console.error('Logout error:', error);
+      setError('登出失败，请重试');
+      // 即使出错也要清除本地数据
+      localStorage.removeItem('token');
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      setUser(null);
+      window.location.href = '/login';
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
   // 重置消息
   const resetMessages = () => {

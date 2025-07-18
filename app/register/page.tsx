@@ -8,7 +8,6 @@ import { EyeIcon, EyeOffIcon } from '@/components/icons/eye-icon';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -44,13 +43,6 @@ export default function RegisterPage() {
   const validateForm = () => {
     const errors: Record<string, string> = {};
     
-    if (!formData.username) errors.username = '请输入用户名';
-    if (formData.username && formData.username.length < 3) {
-      errors.username = '用户名至少需要3个字符';
-    }
-    if (formData.username && !/^[a-zA-Z0-9_-]+$/.test(formData.username)) {
-      errors.username = '用户名只能包含字母、数字、下划线和连字符';
-    }
     if (!formData.email) errors.email = '请输入邮箱地址';
     if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) {
       errors.email = '请输入有效的邮箱地址';
@@ -76,7 +68,6 @@ export default function RegisterPage() {
 
     try {
       const result = await register(
-        formData.username,
         formData.email,
         formData.password,
         formData.full_name || ''
@@ -157,27 +148,6 @@ export default function RegisterPage() {
             )}
 
             <form onSubmit={handleSubmit}>
-              {/* 用户名 */}
-              <div className={`mb-6 ${formErrors.username ? 'error' : ''}`}>
-                <label className="block text-sm text-[#B8BCC8] mb-2 font-medium">
-                  用户名
-                </label>
-                <input
-                  name="username"
-                  type="text"
-                  value={formData.username}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-[14px] bg-[#1A1A2E] border ${
-                    formErrors.username ? 'border-[#EE5A6F]' : 'border-white/10'
-                  } rounded-[10px] text-[#F5F5F5] placeholder:text-[#6C7293] text-base focus:outline-none focus:border-[#00D9FF] focus:bg-[#1A1A2E]/80 focus:input-focus transition-all duration-300`}
-                  placeholder="请输入用户名"
-                  disabled={loading}
-                />
-                {formErrors.username && (
-                  <span className="text-[#EE5A6F] text-xs mt-1 block">{formErrors.username}</span>
-                )}
-              </div>
-
               {/* 邮箱 */}
               <div className={`mb-6 ${formErrors.email ? 'error' : ''}`}>
                 <label className="block text-sm text-[#B8BCC8] mb-2 font-medium">

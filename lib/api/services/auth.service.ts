@@ -3,15 +3,13 @@ import { User, LoginResponse } from '@/lib/types';
 import { ApiResponse } from '@/lib/types/api';
 
 export interface RegisterDto {
-  username: string;
   email: string;
   password: string;
   full_name?: string;
-  phone?: string;
 }
 
 export interface LoginDto {
-  username: string;
+  email: string;
   password: string;
 }
 
@@ -74,8 +72,13 @@ class AuthService {
    * 登出（清除本地 token）
    */
   async logout(): Promise<void> {
-    // 可以调用后端的登出接口（如果有的话）
-    // await httpClient.post(`${this.basePath}/logout`);
+    try {
+      // 尝试调用后端的登出接口（如果存在）
+      await httpClient.post(`${this.basePath}/logout`);
+    } catch (error) {
+      // 即使后端登出失败，也要清除本地存储
+      console.log('Backend logout failed, clearing local storage');
+    }
     
     // 清除本地存储
     localStorage.removeItem('token');

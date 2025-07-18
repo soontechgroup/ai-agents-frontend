@@ -23,8 +23,8 @@ export interface LoginResponse {
 
 export interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string, full_name?: string) => Promise<any>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, full_name?: string) => Promise<any>;
   logout: () => void;
   resetMessages: () => void;
   error: string | null;
