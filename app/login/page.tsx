@@ -220,7 +220,7 @@ export default function LoginPage() {
             </div>
 
             {/* 第三方登录按钮 */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <button
                 className="p-3.5 rounded-[10px] flex items-center justify-center text-xl transition-all duration-300"
                 style={{
@@ -240,26 +240,6 @@ export default function LoginPage() {
                 title="Google登录"
               >
                 🔍
-              </button>
-              <button
-                className="p-3.5 rounded-[10px] flex items-center justify-center text-xl transition-all duration-300"
-                style={{
-                  backgroundColor: 'transparent',
-                  border: '1px solid var(--border-default)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                  e.currentTarget.style.backgroundColor = 'rgba(0, 217, 255, 0.05)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border-default)';
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.transform = '';
-                }}
-                title="GitHub登录"
-              >
-                🐙
               </button>
               <button
                 className="p-3.5 rounded-[10px] flex items-center justify-center text-xl transition-all duration-300"
