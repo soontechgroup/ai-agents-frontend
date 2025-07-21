@@ -63,15 +63,22 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('注册表单提交', formData);
     
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      console.log('表单验证失败', formErrors);
+      return;
+    }
 
+    console.log('开始调用注册接口...');
     try {
       const result = await register(
         formData.email,
         formData.password,
         formData.full_name || ''
       );
+      
+      console.log('注册结果:', result);
       
       // 如果自动登录成功，跳转到首页
       if (result?.success) {
@@ -85,6 +92,7 @@ export default function RegisterPage() {
         }, 2000);
       }
     } catch (error) {
+      console.error('注册失败:', error);
       // 错误已在 AuthProvider 中处理
     }
   };

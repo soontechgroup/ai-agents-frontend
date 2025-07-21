@@ -5,16 +5,10 @@ class HttpClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string = '') {
-    // 判断是否在浏览器环境且部署在 HTTPS
-    const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
-    
     if (baseURL) {
       this.baseURL = baseURL;
-    } else if (isHttps) {
-      // HTTPS 环境下使用相对路径，让 Next.js rewrites 处理
-      this.baseURL = '';
     } else {
-      // HTTP 环境或服务端渲染时使用完整 URL
+      // 默认使用环境变量或本地地址
       this.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     }
     
@@ -31,7 +25,14 @@ class HttpClient {
 
   // 构建完整的 URL
   private buildURL(endpoint: string, params?: Record<string, any>): string {
-    const url = new URL(`${this.baseURL}${endpoint}`);
+    // 在浏览器环境且是 HTTPS 时，使用相对路径
+    let baseURL = this.baseURL;
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:' && this.baseURL.startsWith('http://')) {
+      // HTTPS 页面访问 HTTP API，使用相对路径让 Next.js rewrites 处理
+      baseURL = '';
+    }
+    
+    const url = new URL(`${baseURL}${endpoint}`, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001');
     
     if (params) {
       Object.keys(params).forEach(key => {

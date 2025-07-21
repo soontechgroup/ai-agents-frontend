@@ -88,16 +88,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // 注册
   const register = async (email: string, password: string, full_name?: string) => {
+    console.log('AuthProvider register called with:', { email, full_name });
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
+      console.log('调用 authService.register...');
       const response = await authService.register({
         email,
         password,
         full_name,
       });
+      
+      console.log('注册API响应:', response);
 
       // 检查响应是否成功
       if (response.code === 200 || response.data) {
@@ -127,6 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setError(response.message || '注册失败');
       }
     } catch (error) {
+      console.error('注册异常:', error);
       const apiError = error as ApiError;
       setError(apiError.message || '注册失败');
       throw error;
