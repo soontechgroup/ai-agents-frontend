@@ -5,7 +5,19 @@ class HttpClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string = '') {
-    this.baseURL = baseURL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    // 判断是否在浏览器环境且部署在 HTTPS
+    const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+    
+    if (baseURL) {
+      this.baseURL = baseURL;
+    } else if (isHttps) {
+      // HTTPS 环境下使用相对路径，让 Next.js rewrites 处理
+      this.baseURL = '';
+    } else {
+      // HTTP 环境或服务端渲染时使用完整 URL
+      this.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    }
+    
     this.defaultHeaders = {
       'Content-Type': 'application/json',
     };
