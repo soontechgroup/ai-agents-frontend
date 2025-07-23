@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu } from 'lucide-react';
 import { useAuth } from '@/components/providers/auth-provider';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const pathname = usePathname();
 
   return (
     <nav className="sticky top-0 z-[100] backdrop-blur-[20px]" style={{
@@ -24,25 +26,52 @@ export default function Navbar() {
             <li>
               <Link 
                 href="/" 
-                className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors relative"
+                className={`transition-colors relative ${
+                  pathname === '/' 
+                    ? 'text-[var(--accent-primary)]' 
+                    : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'
+                }`}
               >
                 首页
+                {pathname === '/' && (
+                  <div className="absolute -bottom-2 left-0 right-0 h-0.5" style={{
+                    background: 'var(--accent-gradient)'
+                  }} />
+                )}
               </Link>
             </li>
             <li>
               <Link 
                 href="/chat" 
-                className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors"
+                className={`transition-colors relative ${
+                  pathname === '/chat' 
+                    ? 'text-[var(--accent-primary)]' 
+                    : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'
+                }`}
               >
                 会话
+                {pathname === '/chat' && (
+                  <div className="absolute -bottom-2 left-0 right-0 h-0.5" style={{
+                    background: 'var(--accent-gradient)'
+                  }} />
+                )}
               </Link>
             </li>
             <li>
               <Link 
-                href="/profile" 
-                className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors"
+                href="/personal" 
+                className={`transition-colors relative ${
+                  pathname === '/personal' 
+                    ? 'text-[var(--accent-primary)]' 
+                    : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'
+                }`}
               >
                 个人中心
+                {pathname === '/personal' && (
+                  <div className="absolute -bottom-2 left-0 right-0 h-0.5" style={{
+                    background: 'var(--accent-gradient)'
+                  }} />
+                )}
               </Link>
             </li>
           </ul>
@@ -87,7 +116,11 @@ export default function Navbar() {
               <li>
                 <Link 
                   href="/" 
-                  className="block text-[var(--text-secondary)] hover:text-[var(--accent-primary)]"
+                  className={`block ${
+                    pathname === '/' 
+                      ? 'text-[var(--accent-primary)]' 
+                      : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'
+                  }`}
                 >
                   首页
                 </Link>
@@ -95,15 +128,23 @@ export default function Navbar() {
               <li>
                 <Link 
                   href="/chat" 
-                  className="block text-[var(--text-secondary)] hover:text-[var(--accent-primary)]"
+                  className={`block ${
+                    pathname === '/chat' 
+                      ? 'text-[var(--accent-primary)]' 
+                      : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'
+                  }`}
                 >
                   会话
                 </Link>
               </li>
               <li>
                 <Link 
-                  href="/profile" 
-                  className="block text-[var(--text-secondary)] hover:text-[var(--accent-primary)]"
+                  href="/personal" 
+                  className={`block ${
+                    pathname === '/personal' 
+                      ? 'text-[var(--accent-primary)]' 
+                      : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'
+                  }`}
                 >
                   个人中心
                 </Link>
