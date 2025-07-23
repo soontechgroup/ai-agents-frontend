@@ -64,10 +64,10 @@ export default function HomePage() {
             创建属于您的专属数字人，开启智能对话新体验
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex justify-center">
             <Link
               href="/create"
-              className="w-full sm:w-auto px-8 py-3 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2 btn-gradient"
+              className="px-8 py-3 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2 btn-gradient"
               style={{ boxShadow: 'var(--shadow-md)' }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';
@@ -80,27 +80,6 @@ export default function HomePage() {
             >
               <span>＋</span>
               <span>创建数字人</span>
-            </Link>
-            
-            <Link
-              href="/templates"
-              className="w-full sm:w-auto px-8 py-3 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2"
-              style={{
-                backgroundColor: 'transparent',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-default)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                e.currentTarget.style.boxShadow = 'var(--glow-sm)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--border-default)';
-                e.currentTarget.style.boxShadow = '';
-              }}
-            >
-              <span>🎯</span>
-              <span>浏览模板</span>
             </Link>
           </div>
         </section>
