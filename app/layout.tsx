@@ -12,6 +12,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'AI Agents Frontend',
   description: 'AI Agents Frontend Application',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
