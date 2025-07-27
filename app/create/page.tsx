@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { X, Upload, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { digitalHumanService } from '@/lib/api/services/digital-human.service';
+import { useToast } from '@/lib/hooks/useToast';
 
 interface DigitalHumanData {
   name: string;
@@ -21,6 +23,7 @@ interface DigitalHumanData {
 
 export default function CreateDigitalHumanPage() {
   const router = useRouter();
+  const { showToast, ToastContainer } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<DigitalHumanData>({
     name: '',
@@ -60,9 +63,65 @@ export default function CreateDigitalHumanPage() {
     router.back();
   };
 
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        // 基本信息校验
+        if (!formData.name.trim()) {
+          showToast({
+            message: '请输入数字人名称',
+            type: 'error'
+          });
+          return false;
+        }
+        if (formData.name.trim().length < 2) {
+          showToast({
+            message: '数字人名称至少需要2个字符',
+            type: 'error'
+          });
+          return false;
+        }
+        if (!formData.shortDescription.trim()) {
+          showToast({
+            message: '请输入简短描述',
+            type: 'error'
+          });
+          return false;
+        }
+        return true;
+      
+      case 2:
+        // 类型选择校验
+        if (!formData.type) {
+          showToast({
+            message: '请选择数字人类型',
+            type: 'error'
+          });
+          return false;
+        }
+        return true;
+      
+      case 3:
+        // 能力配置校验
+        if (formData.skills.length === 0) {
+          showToast({
+            message: '请至少添加一个专业领域标签',
+            type: 'error'
+          });
+          return false;
+        }
+        return true;
+      
+      default:
+        return true;
+    }
+  };
+
   const handleNext = () => {
     if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
+      if (validateStep(currentStep)) {
+        setCurrentStep(currentStep + 1);
+      }
     } else {
       handleCreate();
     }
@@ -92,15 +151,59 @@ export default function CreateDigitalHumanPage() {
   };
 
   const handleCreate = async () => {
+    // 最终校验
+    if (!validateStep(1) || !validateStep(2) || !validateStep(3)) {
+      showToast({
+        message: '请检查并完善所有必填信息',
+        type: 'error'
+      });
+      return;
+    }
+
     setIsCreating(true);
     try {
-      // TODO: 调用 API 创建数字人
-      await new Promise(resolve => setTimeout(resolve, 2000)); // 模拟 API 调用
+      const createData = {
+        name: formData.name,
+        short_description: formData.shortDescription,
+        detailed_description: formData.detailedDescription,
+        type: formData.type,
+        skills: formData.skills,
+        personality: formData.personality,
+        conversation_style: formData.conversationStyle,
+        temperature: 0.7,
+        max_tokens: 2048
+      };
+
+      const response = await digitalHumanService.createDigitalHuman(createData);
       
-      // 创建成功后跳转到首页
-      router.push('/');
+      if (response.code === 200 && response.data) {
+        showToast({
+          message: '🎉 数字人创建成功！',
+          type: 'success'
+        });
+        router.push('/personal');
+      } else {
+        showToast({
+          message: response.message || '创建数字人失败',
+          type: 'error'
+        });
+      }
     } catch (error) {
       console.error('创建数字人失败:', error);
+      
+      let errorMessage = '创建数字人失败，请检查网络连接';
+      
+      // 如果是API错误，显示具体的错误信息
+      if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = (error as any).message;
+      } else if (error && typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      showToast({
+        message: errorMessage,
+        type: 'error'
+      });
     } finally {
       setIsCreating(false);
     }
@@ -254,7 +357,7 @@ export default function CreateDigitalHumanPage() {
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                        数字人名称
+                        数字人名称 <span className="text-[var(--error)]">*</span>
                       </label>
                       <input
                         type="text"
@@ -279,7 +382,7 @@ export default function CreateDigitalHumanPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                        简短描述
+                        简短描述 <span className="text-[var(--error)]">*</span>
                         <button className="ml-4 inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs transition-all duration-300 hover:translate-y-[-1px]"
                           style={{
                             backgroundColor: 'rgba(123, 104, 238, 0.1)',
@@ -390,7 +493,7 @@ export default function CreateDigitalHumanPage() {
                   <div>
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-[var(--text-primary)]">
                       <span>🎯</span>
-                      专业领域
+                      专业领域 <span className="text-[var(--error)]">*</span>
                     </h3>
                     <div className="flex gap-2 mb-4">
                       <input
@@ -614,6 +717,9 @@ export default function CreateDigitalHumanPage() {
           </div>
         </div>
       </div>
+
+      {/* Toast容器 */}
+      <ToastContainer />
     </div>
   );
 }

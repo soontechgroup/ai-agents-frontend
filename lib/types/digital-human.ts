@@ -1,16 +1,51 @@
 // 数字人信息
 export interface DigitalHuman {
-  id: string;
+  id: number;
   name: string;
-  description: string;
-  avatar: string;
-  status: 'online' | 'offline';
-  chats: number;
+  short_description?: string;
+  detailed_description?: string;
+  type?: string;
+  skills?: string[];
+  personality?: Record<string, any>;
+  conversation_style?: string;
+  temperature?: number;
+  max_tokens?: number;
+  avatar?: string;
+  status?: 'online' | 'offline';
+  chats?: number;
   likes?: number;
   rating?: number;
   specialties?: string[];
   topics?: string[];
   imageUrl?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// 创建数字人请求
+export interface DigitalHumanCreate {
+  name: string;
+  short_description?: string;
+  detailed_description?: string;
+  type?: string;
+  skills?: string[];
+  personality?: Record<string, any>;
+  conversation_style?: string;
+  temperature?: number;
+  max_tokens?: number;
+}
+
+// 更新数字人请求
+export interface DigitalHumanUpdate {
+  name?: string;
+  short_description?: string;
+  detailed_description?: string;
+  type?: string;
+  skills?: string[];
+  personality?: Record<string, any>;
+  conversation_style?: string;
+  temperature?: number;
+  max_tokens?: number;
 }
 
 // 聊天消息

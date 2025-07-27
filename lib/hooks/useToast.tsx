@@ -30,8 +30,8 @@ export function useToast() {
         {toasts.map((toast, index) => (
           <div
             key={toast.id}
-            style={{ top: `${(index + 1) * 60}px` }}
-            className="fixed right-4 z-50"
+            style={{ top: `${24 + index * 120}px` }}
+            className="fixed right-6 z-50"
           >
             <Toast
               {...toast}
