@@ -22,7 +22,7 @@ export default function ChatSidebar({ digitalHuman, onUseTopic }: ChatSidebarPro
                 {digitalHuman.name}
               </h3>
               <p className="text-sm text-[var(--text-secondary)]">
-                {digitalHuman.description}
+                {digitalHuman.short_description || digitalHuman.detailed_description || '数字人助手'}
               </p>
             </div>
           </div>
