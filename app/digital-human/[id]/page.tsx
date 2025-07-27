@@ -50,7 +50,7 @@ export default function DigitalHumanChatPage() {
               } : null);
             }
           } catch (error) {
-            console.error('获取推荐话题失败:', error);
+            // 静默处理推荐话题获取失败
           }
         } else {
           showToast({
@@ -60,7 +60,6 @@ export default function DigitalHumanChatPage() {
           router.back();
         }
       } catch (error) {
-        console.error('加载数字人失败:', error);
         showToast({
           message: '加载数字人失败',
           type: 'error'
@@ -108,7 +107,6 @@ export default function DigitalHumanChatPage() {
         });
       }
     } catch (error) {
-      console.error('发送消息失败:', error);
       showToast({
         message: '发送消息失败',
         type: 'error'

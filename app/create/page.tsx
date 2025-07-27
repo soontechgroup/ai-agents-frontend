@@ -189,8 +189,6 @@ export default function CreateDigitalHumanPage() {
         });
       }
     } catch (error) {
-      console.error('创建数字人失败:', error);
-      
       let errorMessage = '创建数字人失败，请检查网络连接';
       
       // 如果是API错误，显示具体的错误信息
