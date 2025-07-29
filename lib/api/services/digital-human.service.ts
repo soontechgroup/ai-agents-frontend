@@ -19,9 +19,9 @@ export interface SendMessageResponse {
 }
 
 class DigitalHumanService {
-  // 创建数字人 - 对应 POST /api/v1/digital-humans/
+  // 创建数字人 - 对应 POST /api/v1/digital-humans/create
   async createDigitalHuman(data: DigitalHumanCreate): Promise<ApiResponse<DigitalHuman>> {
-    return httpClient.post<ApiResponse<DigitalHuman>>('/api/v1/digital-humans/', data);
+    return httpClient.post<ApiResponse<DigitalHuman>>('/api/v1/digital-humans/create', data);
   }
 
   // 获取数字人详情 - 对应 GET /api/v1/digital-humans/{id}
@@ -39,9 +39,9 @@ class DigitalHumanService {
     return httpClient.delete<ApiResponse<void>>(`/api/v1/digital-humans/${id}`);
   }
 
-  // 获取数字人列表 (如果后端有这个端口的话)
+  // 获取数字人列表 - 对应 GET /api/v1/digital-humans/page
   async getDigitalHumans(): Promise<ApiResponse<DigitalHuman[]>> {
-    return httpClient.get<ApiResponse<DigitalHuman[]>>('/api/v1/digital-humans');
+    return httpClient.get<ApiResponse<DigitalHuman[]>>('/api/v1/digital-humans/page');
   }
 
   // 发送消息给数字人
