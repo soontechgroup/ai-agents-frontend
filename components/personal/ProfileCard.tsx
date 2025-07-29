@@ -8,9 +8,10 @@ interface ProfileCardProps {
   digitalHumans?: number;
   conversations?: number;
   trainingSessions?: number;
+  onTabChange?: (tab: 'digital-humans' | 'training' | 'conversations') => void;
 }
 
-export default function ProfileCard({ user, digitalHumans = 0, conversations = 0, trainingSessions = 0 }: ProfileCardProps) {
+export default function ProfileCard({ user, digitalHumans = 0, conversations = 0, trainingSessions = 0, onTabChange }: ProfileCardProps) {
   const getUserInitials = (user: User) => {
     if (user.full_name) {
       return user.full_name
@@ -60,6 +61,7 @@ export default function ProfileCard({ user, digitalHumans = 0, conversations = 0
         digitalHumans={digitalHumans}
         conversations={conversations}
         trainingSessions={trainingSessions}
+        onTabChange={onTabChange}
       />
     </div>
   );
