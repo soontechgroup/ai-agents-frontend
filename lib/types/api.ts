@@ -1,10 +1,12 @@
 // API 响应的通用类型
 export interface ApiResponse<T = any> {
-  success: boolean;
+  code: number;
+  message: string;
   data?: T;
+  timestamp?: string;
+  success?: boolean;
   error?: string;
   detail?: string;
-  message?: string;
 }
 
 // 分页响应

@@ -8,11 +8,12 @@ import ChatDialogue from '@/components/chat/ChatDialogue';
 import ChatInput from '@/components/chat/ChatInput';
 import { DigitalHuman, ChatMessage } from '@/lib/types/digital-human';
 import { useToast } from '@/lib/hooks/useToast';
+import { digitalHumanService } from '@/lib/api/services/digital-human.service';
 
 export default function DigitalHumanChatPage() {
   const params = useParams();
   const router = useRouter();
-  const id = params.id as string;
+  const id = parseInt(params.id as string);
   const { showToast, ToastContainer } = useToast();
 
   // 状态管理
@@ -25,32 +26,50 @@ export default function DigitalHumanChatPage() {
 
   // 初始化数字人信息和欢迎消息
   useEffect(() => {
-    // 模拟获取数字人信息
-    setDigitalHuman({
-      id,
-      name: '口才训练助手',
-      description: '帮你提升表达和沟通能力',
-      avatar: '🎤',
-      status: 'online',
-      chats: 948,
-      rating: 4.8,
-      specialties: ['演讲', '沟通'],
-      topics: [
-        '如何克服演讲紧张？',
-        '怎样让表达更有逻辑？',
-        '如何提升语言感染力？',
-        '职场沟通有哪些技巧？'
-      ]
-    });
+    const loadDigitalHuman = async () => {
+      try {
+        const response = await digitalHumanService.getDigitalHuman(id);
+        if (response.success && response.data) {
+          setDigitalHuman(response.data);
+          
+          // 添加欢迎消息
+          setMessages([{
+            id: '1',
+            type: 'ai',
+            content: `嗨，你好！我是${response.data.name}。\n\n${response.data.short_description || response.data.detailed_description || '很高兴与你对话！有什么我可以帮助你的吗？'}`,
+            timestamp: new Date()
+          }]);
 
-    // 添加欢迎消息
-    setMessages([{
-      id: '1',
-      type: 'ai',
-      content: '嗨，你好。\n\n你好呀！很高兴和你通话，开启这次口才训练之旅。为了能给你制定更有针对性的训练方案，能否先简单跟我讲讲你的工作领域以及日常沟通场景呢？比如是职场汇报比较多，还是日常社交沟通居多，这样我能更好地帮你提升口才。',
-      timestamp: new Date()
-    }]);
-  }, [id]);
+          // 获取推荐话题
+          try {
+            const topicsResponse = await digitalHumanService.getRecommendedTopics(id);
+            if (topicsResponse.success && topicsResponse.data) {
+              setDigitalHuman(prev => prev ? {
+                ...prev,
+                topics: topicsResponse.data?.map(topic => topic.text)
+              } : null);
+            }
+          } catch (error) {
+            // 静默处理推荐话题获取失败
+          }
+        } else {
+          showToast({
+            message: '获取数字人信息失败',
+            type: 'error'
+          });
+          router.back();
+        }
+      } catch (error) {
+        showToast({
+          message: '加载数字人失败',
+          type: 'error'
+        });
+        router.back();
+      }
+    };
+
+    loadDigitalHuman();
+  }, [id, router, showToast]);
 
   // 发送消息
   const sendMessage = async (content: string, isVoice: boolean = false) => {
@@ -65,26 +84,36 @@ export default function DigitalHumanChatPage() {
     setMessageCount(prev => prev + 1);
     setIsThinking(true);
 
-    // 模拟AI回复
-    setTimeout(() => {
-      const aiResponses = [
-        '这是个很好的问题！让我来帮你解答...',
-        '我理解你的意思。根据我的经验...',
-        '谢谢你的分享！关于这个话题...',
-        '很有意思的观点！让我们深入探讨一下...'
-      ];
-      
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        type: 'ai',
-        content: aiResponses[Math.floor(Math.random() * aiResponses.length)],
-        timestamp: new Date()
-      };
+    try {
+      const response = await digitalHumanService.sendMessage(id, {
+        message: content,
+        isVoice
+      });
 
-      setMessages(prev => [...prev, aiMessage]);
-      setMessageCount(prev => prev + 1);
+      if (response.success && response.data) {
+        const aiMessage: ChatMessage = {
+          id: response.data.messageId,
+          type: 'ai',
+          content: response.data.reply,
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, aiMessage]);
+        setMessageCount(prev => prev + 1);
+      } else {
+        showToast({
+          message: '发送消息失败',
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      showToast({
+        message: '发送消息失败',
+        type: 'error'
+      });
+    } finally {
       setIsThinking(false);
-    }, 1500);
+    }
   };
 
   // 使用推荐话题
