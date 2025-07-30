@@ -28,6 +28,10 @@ export default function PersonalCentre() {
     conversations: 0,
     trainingSessions: 0
   });
+  
+  // 缓存数字人数据，避免标签切换时重复请求
+  const [digitalHumansCache, setDigitalHumansCache] = useState<any>(null);
+  
 
   // 处理数字人数量变化
   const handleDigitalHumansCountChange = (count: number) => {
@@ -35,6 +39,21 @@ export default function PersonalCentre() {
       ...prev,
       digitalHumans: count
     }));
+  };
+
+  // 处理数字人数据缓存
+  const handleDigitalHumansDataChange = (data: any) => {
+    setDigitalHumansCache(data);
+  };
+
+  // 处理标签切换，每次都从顶部开始
+  const handleTabChange = (tab: 'digital-humans' | 'training' | 'conversations') => {
+    setActiveTab(tab);
+    
+    // 切换后滚动到顶部
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 0);
   };
   const [trainingData, setTrainingData] = useState<TrainingItem[]>([]);
   const [activeTab, setActiveTab] = useState<'digital-humans' | 'training' | 'conversations'>('digital-humans');
@@ -105,7 +124,7 @@ export default function PersonalCentre() {
               digitalHumans={userStats.digitalHumans}
               conversations={userStats.conversations}
               trainingSessions={userStats.trainingSessions}
-              onTabChange={setActiveTab}
+              onTabChange={handleTabChange}
             />
           </div>
           <div className="lg:col-span-2">
@@ -115,13 +134,17 @@ export default function PersonalCentre() {
 
         <ActionButtons 
           activeTab={activeTab} 
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
         />
         
         {/* 根据选中的标签页显示对应内容 */}
         <div className="mb-8">
           {activeTab === 'digital-humans' && (
-            <MyDigitalHumans onDigitalHumansCountChange={handleDigitalHumansCountChange} />
+            <MyDigitalHumans 
+              onDigitalHumansCountChange={handleDigitalHumansCountChange}
+              onDataChange={handleDigitalHumansDataChange}
+              cachedData={digitalHumansCache}
+            />
           )}
           
           {activeTab === 'training' && (

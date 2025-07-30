@@ -9,9 +9,11 @@ import { useAuth } from '@/components/providers/auth-provider';
 
 interface MyDigitalHumansProps {
   onDigitalHumansCountChange?: (count: number) => void;
+  onDataChange?: (data: any) => void;
+  cachedData?: any;
 }
 
-export default function MyDigitalHumans({ onDigitalHumansCountChange }: MyDigitalHumansProps) {
+export default function MyDigitalHumans({ onDigitalHumansCountChange, onDataChange, cachedData }: MyDigitalHumansProps) {
   const { user } = useAuth();
   const [digitalHumans, setDigitalHumans] = useState<DigitalHuman[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +44,15 @@ export default function MyDigitalHumans({ onDigitalHumansCountChange }: MyDigita
         
         // 通知父组件数字人数量变化
         onDigitalHumansCountChange?.(response.pagination.total);
+        
+        // 缓存数据到父组件（仅首页且无搜索时）
+        if (currentPage === 1 && !searchQuery) {
+          onDataChange?.({
+            digitalHumans: response.data,
+            totalPages: response.pagination.pages,
+            totalCount: response.pagination.total
+          });
+        }
       } else {
         setError(response.message || '获取数字人列表失败');
       }
@@ -54,8 +65,18 @@ export default function MyDigitalHumans({ onDigitalHumansCountChange }: MyDigita
   };
 
   useEffect(() => {
+    // 如果有缓存数据且是首次加载，使用缓存
+    if (cachedData && currentPage === 1 && !searchQuery) {
+      setDigitalHumans(cachedData.digitalHumans || []);
+      setTotalPages(cachedData.totalPages || 1);
+      setTotalCount(cachedData.totalCount || 0);
+      setLoading(false);
+      onDigitalHumansCountChange?.(cachedData.totalCount || 0);
+      return;
+    }
+    
     fetchDigitalHumans();
-  }, [user, currentPage]);
+  }, [user, currentPage, cachedData]);
 
   const handleSearch = () => {
     setCurrentPage(1);
@@ -91,17 +112,8 @@ export default function MyDigitalHumans({ onDigitalHumansCountChange }: MyDigita
     }
   };
 
-  if (loading && digitalHumans.length === 0) {
-    return (
-      <div className="bg-gray-800/50 rounded-lg p-6">
-        <h3 className="text-xl font-semibold text-white mb-4">我的数字人</h3>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <span className="ml-2 text-gray-400">加载中...</span>
-        </div>
-      </div>
-    );
-  }
+  // 保持组件结构一致，在内部显示loading状态
+  const isInitialLoading = loading && digitalHumans.length === 0;
 
   return (
     <div id="my-digital-humans-section" className="bg-[#16213E] border border-[rgba(255,255,255,0.1)] rounded-2xl p-8 backdrop-blur-xl shadow-[0_10px_15px_rgba(0,217,255,0.15)]">
@@ -148,7 +160,12 @@ export default function MyDigitalHumans({ onDigitalHumansCountChange }: MyDigita
       )}
 
       {/* 数字人列表 */}
-      {digitalHumans.length === 0 && !loading ? (
+      {isInitialLoading ? (
+        <div className="text-center py-16 text-[#6C7293]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00D9FF] mx-auto mb-4"></div>
+          <p>加载中...</p>
+        </div>
+      ) : digitalHumans.length === 0 ? (
         <div className="text-center py-16 text-[#6C7293]">
           <div className="text-5xl mb-4 opacity-30">🤖</div>
           <p className="mb-6">您还没有创建数字人</p>

@@ -30,7 +30,7 @@ export default function ActionButtons({ activeTab, onTabChange }: ActionButtonsP
         onClick={() => onTabChange('digital-humans')}
       >
         <span className="relative z-10">
-          {activeTab === 'digital-humans' ? '🤖 我的数字人' : '➕'}
+          🤖 我的数字人
         </span>
       </button>
 
