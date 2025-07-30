@@ -8,6 +8,7 @@ import ProfileCard from '@/components/personal/ProfileCard';
 import PersonalInfo from '@/components/personal/PersonalInfo';
 import ActionButtons from '@/components/personal/ActionButtons';
 import TrainingSection from '@/components/personal/TrainingSection';
+import MyDigitalHumans from '@/components/personal/MyDigitalHumans';
 
 interface TrainingItem {
   id: string;
@@ -27,7 +28,35 @@ export default function PersonalCentre() {
     conversations: 0,
     trainingSessions: 0
   });
+  
+  // 缓存数字人数据，避免标签切换时重复请求
+  const [digitalHumansCache, setDigitalHumansCache] = useState<any>(null);
+  
+
+  // 处理数字人数量变化
+  const handleDigitalHumansCountChange = (count: number) => {
+    setUserStats(prev => ({
+      ...prev,
+      digitalHumans: count
+    }));
+  };
+
+  // 处理数字人数据缓存
+  const handleDigitalHumansDataChange = (data: any) => {
+    setDigitalHumansCache(data);
+  };
+
+  // 处理标签切换，每次都从顶部开始
+  const handleTabChange = (tab: 'digital-humans' | 'training' | 'conversations') => {
+    setActiveTab(tab);
+    
+    // 切换后滚动到顶部
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 0);
+  };
   const [trainingData, setTrainingData] = useState<TrainingItem[]>([]);
+  const [activeTab, setActiveTab] = useState<'digital-humans' | 'training' | 'conversations'>('digital-humans');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -95,6 +124,7 @@ export default function PersonalCentre() {
               digitalHumans={userStats.digitalHumans}
               conversations={userStats.conversations}
               trainingSessions={userStats.trainingSessions}
+              onTabChange={handleTabChange}
             />
           </div>
           <div className="lg:col-span-2">
@@ -102,9 +132,39 @@ export default function PersonalCentre() {
           </div>
         </div>
 
-        <ActionButtons />
+        <ActionButtons 
+          activeTab={activeTab} 
+          onTabChange={handleTabChange}
+        />
         
-        <TrainingSection trainingData={trainingData} />
+        {/* 根据选中的标签页显示对应内容 */}
+        <div className="mb-8">
+          {activeTab === 'digital-humans' && (
+            <MyDigitalHumans 
+              onDigitalHumansCountChange={handleDigitalHumansCountChange}
+              onDataChange={handleDigitalHumansDataChange}
+              cachedData={digitalHumansCache}
+            />
+          )}
+          
+          {activeTab === 'training' && (
+            <TrainingSection trainingData={trainingData} />
+          )}
+          
+          {activeTab === 'conversations' && (
+            <div className="bg-[#16213E] border border-[rgba(255,255,255,0.1)] rounded-2xl p-8 backdrop-blur-xl shadow-[0_10px_15px_rgba(0,217,255,0.15)]">
+              <h3 className="text-xl font-semibold text-[#F5F5F5] mb-6 flex items-center gap-2">
+                <div className="w-1 h-5 bg-gradient-to-b from-[#00D9FF] to-[#7B68EE] rounded-full" />
+                会话记录
+              </h3>
+              <div className="text-center py-16 text-[#6C7293]">
+                <div className="text-5xl mb-4 opacity-30">💬</div>
+                <p className="mb-6">还没有会话记录</p>
+                <p className="text-sm">开始与数字人对话后，会话记录将显示在这里</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

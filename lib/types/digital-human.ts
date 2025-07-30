@@ -74,3 +74,26 @@ export interface RecommendedTopic {
   text: string;
   icon?: string;
 }
+
+// 分页信息
+export interface PaginationMeta {
+  page: number;
+  size: number;
+  total: number;
+  pages: number;
+}
+
+// 分页请求参数
+export interface DigitalHumanPageRequest {
+  page?: number;
+  size?: number;
+  search?: string;
+}
+
+// 分页响应
+export interface DigitalHumanPageResponse {
+  code: number;
+  message: string;
+  data: DigitalHuman[];
+  pagination: PaginationMeta;
+}

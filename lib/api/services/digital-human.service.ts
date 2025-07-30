@@ -5,7 +5,9 @@ import {
   DigitalHumanCreate, 
   DigitalHumanUpdate,
   ChatMessage, 
-  RecommendedTopic 
+  RecommendedTopic,
+  DigitalHumanPageRequest,
+  DigitalHumanPageResponse
 } from '@/lib/types/digital-human';
 
 export interface SendMessageData {
@@ -40,8 +42,16 @@ class DigitalHumanService {
   }
 
   // 获取数字人列表 - 对应 GET /api/v1/digital-humans/page
-  async getDigitalHumans(): Promise<ApiResponse<DigitalHuman[]>> {
-    return httpClient.get<ApiResponse<DigitalHuman[]>>('/api/v1/digital-humans/page');
+  async getDigitalHumans(params?: DigitalHumanPageRequest): Promise<DigitalHumanPageResponse> {
+    const queryParams = {
+      page: params?.page || 1,
+      size: params?.size || 10,
+      ...(params?.search && { search: params.search })
+    };
+    
+    return httpClient.get<DigitalHumanPageResponse>('/api/v1/digital-humans/page', {
+      params: queryParams
+    });
   }
 
   // 发送消息给数字人
