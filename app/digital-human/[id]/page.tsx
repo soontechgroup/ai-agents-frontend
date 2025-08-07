@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import ChatSidebar from '@/components/chat/ChatSidebar';
 import ChatTopbar from '@/components/chat/ChatTopbar';
@@ -31,55 +31,80 @@ export default function DigitalHumanChatPage() {
   const isValidId = id && !isNaN(numericId);
   
   // 调试日志
-  console.log('[DigitalHumanChat] Navigating to digital human:', { id, numericId });
+  console.log('[DigitalHumanChat] Navigating to digital human:', { id, numericId, isValidId });
   
-  // 处理无效ID
+  // 合并ID验证和数据加载的逻辑，避免重复执行
   useEffect(() => {
+    // 使用标志位防止重复跳转
+    let redirectTimeout: NodeJS.Timeout | null = null;
+    let isMounted = true;
+
+    // 无效ID直接处理
     if (!isValidId) {
+      console.log('[DigitalHumanChat] Invalid ID, redirecting to home');
       showToast({ 
         message: '无效的数字人 ID', 
         type: 'error' 
       });
-      router.push('/');
+      redirectTimeout = setTimeout(() => {
+        if (isMounted) {
+          router.push('/');
+        }
+      }, 1000);
+      return;
     }
-  }, [isValidId, router, showToast]);
 
-  // 初始化数字人信息和欢迎消息
-  useEffect(() => {
-    if (!isValidId) return;
+    // 加载数字人数据
     const loadDigitalHuman = async () => {
       setIsLoading(true);
       setError(null);
       
       try {
         console.log('[DigitalHumanChat] Loading digital human with ID:', numericId);
-        const response = await digitalHumanService.getDigitalHuman(numericId);
-        if (response.success && response.data) {
-          console.log('[DigitalHumanChat] Digital human loaded successfully:', response.data);
-          setDigitalHuman(response.data);
+        const digitalHumanData = await digitalHumanService.getDigitalHuman(numericId);
+        
+        // 检查组件是否还挂载
+        if (!isMounted) {
+          console.log('[DigitalHumanChat] Component unmounted, skipping state update');
+          return;
+        }
+
+        console.log('[DigitalHumanChat] Digital human loaded successfully:', digitalHumanData);
+        
+        if (digitalHumanData && digitalHumanData.id) {
+          setDigitalHuman(digitalHumanData);
           
           // 添加欢迎消息
           setMessages([{
             id: '1',
             type: 'ai',
-            content: `嗨，你好！我是${response.data.name}。\n\n${response.data.short_description || response.data.detailed_description || '很高兴与你对话！有什么我可以帮助你的吗？'}`,
+            content: `嗨，你好！我是${digitalHumanData.name}。\n\n${digitalHumanData.short_description || digitalHumanData.detailed_description || '很高兴与你对话！有什么我可以帮助你的吗？'}`,
             timestamp: new Date()
           }]);
 
-          // 推荐话题功能已移除，后续可从conversation服务获取
-          
           setIsLoading(false);
         } else {
-          const errorMessage = response.message || '获取数字人信息失败';
-          setError(errorMessage);
+          console.error('[DigitalHumanChat] No valid data found:', digitalHumanData);
+          setError('无法加载数字人信息');
           showToast({
-            message: errorMessage,
+            message: '无法加载数字人信息',
             type: 'error'
           });
-          setTimeout(() => router.push('/'), 2000);
+          redirectTimeout = setTimeout(() => {
+            if (isMounted) {
+              router.push('/');
+            }
+          }, 2000);
         }
       } catch (error: any) {
         console.error('[DigitalHumanChat] Failed to load digital human:', error);
+        
+        // 检查组件是否还挂载
+        if (!isMounted) {
+          console.log('[DigitalHumanChat] Component unmounted, skipping error handling');
+          return;
+        }
+
         const errorMessage = error?.response?.data?.message || error?.message || '加载数字人失败';
         
         // 特殊处理 404 错误
@@ -100,12 +125,24 @@ export default function DigitalHumanChatPage() {
           });
         }
         
-        setTimeout(() => router.push('/'), 2000);
+        redirectTimeout = setTimeout(() => {
+          if (isMounted) {
+            router.push('/');
+          }
+        }, 2000);
       }
     };
 
     loadDigitalHuman();
-  }, [numericId, router, showToast, isValidId]);
+
+    // Cleanup 函数
+    return () => {
+      isMounted = false;
+      if (redirectTimeout) {
+        clearTimeout(redirectTimeout);
+      }
+    };
+  }, [numericId, isValidId]); // 只依赖于稳定的值，移除 router 和 showToast
 
   // 发送消息
   const sendMessage = async (content: string, isVoice: boolean = false) => {

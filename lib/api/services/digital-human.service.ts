@@ -27,8 +27,16 @@ class DigitalHumanService {
   }
 
   // 获取数字人详情 - 对应 POST /api/v1/digital-humans/detail
-  async getDigitalHuman(id: number): Promise<ApiResponse<DigitalHuman>> {
-    return httpClient.post<ApiResponse<DigitalHuman>>('/api/v1/digital-humans/detail', { id });
+  async getDigitalHuman(id: number): Promise<DigitalHuman> {
+    const response = await httpClient.post<any>('/api/v1/digital-humans/detail', { id });
+    // 兼容不同的响应格式
+    if (response.data) {
+      return response.data;
+    } else if (response.id) {
+      return response;
+    } else {
+      throw new Error(response.message || '获取数字人详情失败');
+    }
   }
 
   // 更新数字人 - 对应 POST /api/v1/digital-humans/update
