@@ -13,8 +13,24 @@ import { digitalHumanService } from '@/lib/api/services/digital-human.service';
 export default function DigitalHumanChatPage() {
   const params = useParams();
   const router = useRouter();
-  const id = parseInt(params.id as string);
   const { showToast, ToastContainer } = useToast();
+  
+  // 改进 ID 解析，添加验证
+  const id = params.id as string;
+  const numericId = parseInt(id);
+  
+  // 调试日志
+  console.log('[DigitalHumanChat] Navigating to digital human:', { id, numericId });
+  
+  // 验证 ID 是否有效
+  if (!id || isNaN(numericId)) {
+    showToast({ 
+      message: '无效的数字人 ID', 
+      type: 'error' 
+    });
+    router.push('/');
+    return null;
+  }
 
   // 状态管理
   const [digitalHuman, setDigitalHuman] = useState<DigitalHuman | null>(null);
@@ -23,13 +39,20 @@ export default function DigitalHumanChatPage() {
   const [isFavorited, setIsFavorited] = useState(false);
   const [sessionStartTime] = useState(Date.now());
   const [messageCount, setMessageCount] = useState(1); // 包含欢迎消息
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // 初始化数字人信息和欢迎消息
   useEffect(() => {
     const loadDigitalHuman = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
-        const response = await digitalHumanService.getDigitalHuman(id);
+        console.log('[DigitalHumanChat] Loading digital human with ID:', numericId);
+        const response = await digitalHumanService.getDigitalHuman(numericId);
         if (response.success && response.data) {
+          console.log('[DigitalHumanChat] Digital human loaded successfully:', response.data);
           setDigitalHuman(response.data);
           
           // 添加欢迎消息
@@ -42,7 +65,7 @@ export default function DigitalHumanChatPage() {
 
           // 获取推荐话题
           try {
-            const topicsResponse = await digitalHumanService.getRecommendedTopics(id);
+            const topicsResponse = await digitalHumanService.getRecommendedTopics(numericId);
             if (topicsResponse.success && topicsResponse.data) {
               setDigitalHuman(prev => prev ? {
                 ...prev,
@@ -52,24 +75,45 @@ export default function DigitalHumanChatPage() {
           } catch (error) {
             // 静默处理推荐话题获取失败
           }
+          
+          setIsLoading(false);
         } else {
+          const errorMessage = response.message || '获取数字人信息失败';
+          setError(errorMessage);
           showToast({
-            message: '获取数字人信息失败',
+            message: errorMessage,
             type: 'error'
           });
-          router.back();
+          setTimeout(() => router.push('/'), 2000);
         }
-      } catch (error) {
-        showToast({
-          message: '加载数字人失败',
-          type: 'error'
-        });
-        router.back();
+      } catch (error: any) {
+        console.error('[DigitalHumanChat] Failed to load digital human:', error);
+        const errorMessage = error?.response?.data?.message || error?.message || '加载数字人失败';
+        
+        // 特殊处理 404 错误
+        if (error?.response?.status === 404) {
+          const is404Message = errorMessage.includes('不存在') || errorMessage.includes('无权访问');
+          if (is404Message) {
+            setError('该数字人不存在或您没有访问权限');
+            showToast({
+              message: '该数字人不存在或您没有访问权限，即将返回首页',
+              type: 'warning'
+            });
+          }
+        } else {
+          setError(errorMessage);
+          showToast({
+            message: errorMessage,
+            type: 'error'
+          });
+        }
+        
+        setTimeout(() => router.push('/'), 2000);
       }
     };
 
     loadDigitalHuman();
-  }, [id, router, showToast]);
+  }, [numericId, router, showToast]);
 
   // 发送消息
   const sendMessage = async (content: string, isVoice: boolean = false) => {
@@ -85,7 +129,7 @@ export default function DigitalHumanChatPage() {
     setIsThinking(true);
 
     try {
-      const response = await digitalHumanService.sendMessage(id, {
+      const response = await digitalHumanService.sendMessage(numericId, {
         message: content,
         isVoice
       });
@@ -137,8 +181,43 @@ export default function DigitalHumanChatPage() {
     });
   };
 
+  // 加载状态
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[var(--bg-primary)]">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--accent-primary)]"></div>
+          <p className="mt-4 text-[var(--text-secondary)]">正在加载数字人信息...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 错误状态
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[var(--bg-primary)]">
+        <div className="text-center">
+          <div className="text-6xl mb-4">❌</div>
+          <h2 className="text-2xl font-semibold mb-2 text-[var(--text-primary)]">加载失败</h2>
+          <p className="text-[var(--text-secondary)] mb-4">{error}</p>
+          <p className="text-sm text-[var(--text-muted)]">即将返回上一页...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 数据未找到
   if (!digitalHuman) {
-    return <div>加载中...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen bg-[var(--bg-primary)]">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🤖</div>
+          <h2 className="text-2xl font-semibold mb-2 text-[var(--text-primary)]">数字人不存在</h2>
+          <p className="text-[var(--text-secondary)]">该数字人可能已被删除或不存在</p>
+        </div>
+      </div>
+    );
   }
 
   return (

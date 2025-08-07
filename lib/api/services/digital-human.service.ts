@@ -26,59 +26,33 @@ class DigitalHumanService {
     return httpClient.post<ApiResponse<DigitalHuman>>('/api/v1/digital-humans/create', data);
   }
 
-  // 获取数字人详情 - 对应 GET /api/v1/digital-humans/{id}
+  // 获取数字人详情 - 对应 POST /api/v1/digital-humans/detail
   async getDigitalHuman(id: number): Promise<ApiResponse<DigitalHuman>> {
-    return httpClient.get<ApiResponse<DigitalHuman>>(`/api/v1/digital-humans/${id}`);
+    return httpClient.post<ApiResponse<DigitalHuman>>('/api/v1/digital-humans/detail', { id });
   }
 
-  // 更新数字人 - 对应 PUT /api/v1/digital-humans/{id}
+  // 更新数字人 - 对应 POST /api/v1/digital-humans/update
   async updateDigitalHuman(id: number, data: DigitalHumanUpdate): Promise<ApiResponse<DigitalHuman>> {
-    return httpClient.put<ApiResponse<DigitalHuman>>(`/api/v1/digital-humans/${id}`, data);
+    return httpClient.post<ApiResponse<DigitalHuman>>('/api/v1/digital-humans/update', { id, ...data });
   }
 
-  // 删除数字人 - 对应 DELETE /api/v1/digital-humans/{id}
+  // 删除数字人 - 对应 POST /api/v1/digital-humans/delete
   async deleteDigitalHuman(id: number): Promise<ApiResponse<void>> {
-    return httpClient.delete<ApiResponse<void>>(`/api/v1/digital-humans/${id}`);
+    return httpClient.post<ApiResponse<void>>('/api/v1/digital-humans/delete', { id });
   }
 
-  // 获取数字人列表 - 对应 GET /api/v1/digital-humans/page
+  // 获取数字人列表 - 对应 POST /api/v1/digital-humans/page
   async getDigitalHumans(params?: DigitalHumanPageRequest): Promise<DigitalHumanPageResponse> {
-    const queryParams = {
+    const requestBody = {
       page: params?.page || 1,
       size: params?.size || 10,
-      ...(params?.search && { search: params.search })
+      ...(params?.search && { search: params.search }),
+      include_public: params?.include_public ?? true
     };
     
-    return httpClient.get<DigitalHumanPageResponse>('/api/v1/digital-humans/page', {
-      params: queryParams
-    });
+    return httpClient.post<DigitalHumanPageResponse>('/api/v1/digital-humans/page', requestBody);
   }
 
-  // 发送消息给数字人
-  async sendMessage(
-    digitalHumanId: number, 
-    data: SendMessageData
-  ): Promise<ApiResponse<SendMessageResponse>> {
-    return httpClient.post<ApiResponse<SendMessageResponse>>(
-      `/api/v1/digital-humans/${digitalHumanId}/chat`,
-      data
-    );
-  }
-
-  // 获取推荐话题
-  async getRecommendedTopics(digitalHumanId: number): Promise<ApiResponse<RecommendedTopic[]>> {
-    return httpClient.get<ApiResponse<RecommendedTopic[]>>(`/api/v1/digital-humans/${digitalHumanId}/topics`);
-  }
-
-  // 获取聊天历史
-  async getChatHistory(digitalHumanId: number): Promise<ApiResponse<ChatMessage[]>> {
-    return httpClient.get<ApiResponse<ChatMessage[]>>(`/api/v1/digital-humans/${digitalHumanId}/history`);
-  }
-
-  // 收藏/取消收藏数字人
-  async toggleFavorite(digitalHumanId: number, isFavorited: boolean): Promise<ApiResponse<void>> {
-    return httpClient.post<ApiResponse<void>>(`/api/v1/digital-humans/${digitalHumanId}/favorite`, { isFavorited });
-  }
 }
 
 export const digitalHumanService = new DigitalHumanService();

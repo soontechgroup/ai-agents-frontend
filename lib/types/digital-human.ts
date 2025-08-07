@@ -20,6 +20,10 @@ export interface DigitalHuman {
   imageUrl?: string;
   created_at?: string;
   updated_at?: string;
+  // 权限相关字段
+  canAccess?: boolean;  // 是否可访问
+  accessLevel?: 'view' | 'chat' | 'edit' | 'owner';  // 访问级别
+  isOwner?: boolean;  // 是否是创建者
 }
 
 // 创建数字人请求

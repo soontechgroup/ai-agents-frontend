@@ -35,9 +35,9 @@ class UserService {
    * 获取用户列表（管理员）
    */
   async getUsers(params?: UserQueryParams): Promise<PaginatedResponse<User>> {
-    return httpClient.get<PaginatedResponse<User>>(
-      this.basePath,
-      { params }
+    return httpClient.post<PaginatedResponse<User>>(
+      `${this.basePath}/list`,
+      params || {}
     );
   }
 
@@ -45,7 +45,7 @@ class UserService {
    * 获取单个用户
    */
   async getUserById(id: number): Promise<User> {
-    return httpClient.get<User>(`${this.basePath}/${id}`);
+    return httpClient.post<User>(`${this.basePath}/detail`, { id });
   }
 
   /**
@@ -53,7 +53,7 @@ class UserService {
    */
   async createUser(data: CreateUserDto): Promise<ApiResponse<User>> {
     return httpClient.post<ApiResponse<User>>(
-      this.basePath,
+      `${this.basePath}/create`,
       data
     );
   }
@@ -62,9 +62,9 @@ class UserService {
    * 更新用户（管理员）
    */
   async updateUser(id: number, data: UpdateUserDto): Promise<ApiResponse<User>> {
-    return httpClient.put<ApiResponse<User>>(
-      `${this.basePath}/${id}`,
-      data
+    return httpClient.post<ApiResponse<User>>(
+      `${this.basePath}/update`,
+      { id, ...data }
     );
   }
 
@@ -72,54 +72,12 @@ class UserService {
    * 删除用户（管理员）
    */
   async deleteUser(id: number): Promise<ApiResponse<void>> {
-    return httpClient.delete<ApiResponse<void>>(
-      `${this.basePath}/${id}`
-    );
-  }
-
-  /**
-   * 批量删除用户（管理员）
-   */
-  async deleteUsers(ids: number[]): Promise<ApiResponse<void>> {
     return httpClient.post<ApiResponse<void>>(
-      `${this.basePath}/batch-delete`,
-      { ids }
+      `${this.basePath}/delete`,
+      { id }
     );
   }
 
-  /**
-   * 启用/禁用用户（管理员）
-   */
-  async toggleUserStatus(id: number, isActive: boolean): Promise<ApiResponse<User>> {
-    return httpClient.patch<ApiResponse<User>>(
-      `${this.basePath}/${id}/status`,
-      { is_active: isActive }
-    );
-  }
-
-  /**
-   * 重置用户密码（管理员）
-   */
-  async resetUserPassword(id: number, newPassword: string): Promise<ApiResponse<void>> {
-    return httpClient.post<ApiResponse<void>>(
-      `${this.basePath}/${id}/reset-password`,
-      { new_password: newPassword }
-    );
-  }
-
-  /**
-   * 获取用户统计信息
-   */
-  async getUserStats(): Promise<ApiResponse<{
-    total: number;
-    active: number;
-    inactive: number;
-    admins: number;
-  }>> {
-    return httpClient.get<ApiResponse<any>>(
-      `${this.basePath}/stats`
-    );
-  }
 }
 
 export const userService = new UserService();

@@ -45,28 +45,9 @@ class AuthService {
    * 获取当前用户信息
    */
   async getCurrentUser(): Promise<any> {
-    return httpClient.get<any>(`${this.basePath}/me`);
+    return httpClient.post<any>(`${this.basePath}/current`, {});
   }
 
-  /**
-   * 更新用户信息
-   */
-  async updateProfile(data: Partial<User>): Promise<ApiResponse<User>> {
-    return httpClient.put<ApiResponse<User>>(
-      `${this.basePath}/me`,
-      data
-    );
-  }
-
-  /**
-   * 修改密码
-   */
-  async changePassword(data: ChangePasswordDto): Promise<ApiResponse<void>> {
-    return httpClient.post<ApiResponse<void>>(
-      `${this.basePath}/change-password`,
-      data
-    );
-  }
 
   /**
    * 登出（清除本地 token）
@@ -85,59 +66,6 @@ class AuthService {
     document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   }
 
-  /**
-   * 刷新 token（如果后端支持）
-   */
-  async refreshToken(): Promise<ApiResponse<LoginResponse>> {
-    return httpClient.post<ApiResponse<LoginResponse>>(
-      `${this.basePath}/refresh`,
-      {},
-      { withAuth: true }
-    );
-  }
-
-  /**
-   * 发送验证码
-   */
-  async sendVerificationCode(phone: string): Promise<ApiResponse<void>> {
-    return httpClient.post<ApiResponse<void>>(
-      `${this.basePath}/send-code`,
-      { phone }
-    );
-  }
-
-  /**
-   * 验证手机号
-   */
-  async verifyPhone(phone: string, code: string): Promise<ApiResponse<void>> {
-    return httpClient.post<ApiResponse<void>>(
-      `${this.basePath}/verify-phone`,
-      { phone, code }
-    );
-  }
-
-  /**
-   * 重置密码（忘记密码）
-   */
-  async resetPassword(email: string): Promise<ApiResponse<void>> {
-    return httpClient.post<ApiResponse<void>>(
-      `${this.basePath}/reset-password`,
-      { email }
-    );
-  }
-
-  /**
-   * 确认重置密码
-   */
-  async confirmResetPassword(
-    token: string,
-    newPassword: string
-  ): Promise<ApiResponse<void>> {
-    return httpClient.post<ApiResponse<void>>(
-      `${this.basePath}/reset-password/confirm`,
-      { token, new_password: newPassword }
-    );
-  }
 }
 
 export const authService = new AuthService();

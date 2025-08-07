@@ -16,6 +16,9 @@ interface DigitalHumanCardData {
   chats: number;
   likes: number;
   imageUrl?: string;
+  canAccess: boolean;
+  accessLevel: 'view' | 'chat' | 'edit' | 'owner';
+  isOwner: boolean;
 }
 
 interface DigitalHumanListProps {
@@ -45,15 +48,29 @@ export default function DigitalHumanList({
   // 获取数字人列表
   useEffect(() => {
     const fetchDigitalHumans = async () => {
-      const response = await digitalHumanService.getDigitalHumans({
-        page: 1,
-        size: pageSize,
-        search: searchQuery
-      });
+      try {
+        console.log('[DigitalHumanList] Fetching digital humans...');
+        const response = await digitalHumanService.getDigitalHumans({
+          page: 1,
+          size: pageSize,
+          search: searchQuery
+        });
 
-      // 立即转换数据并只保存需要的字段
-      const mappedData = response.data.map(mapDigitalHumanData);
-      setDigitalHumans(mappedData);
+        // 立即转换数据并只保存需要的字段
+        console.log('[DigitalHumanList] Raw API response:', response);
+        if (response.data && Array.isArray(response.data)) {
+          const mappedData = response.data.map(mapDigitalHumanData);
+          console.log('[DigitalHumanList] Mapped digital humans:', mappedData);
+          console.log('[DigitalHumanList] Digital human IDs:', mappedData.map(h => h.id));
+          setDigitalHumans(mappedData);
+        } else {
+          console.error('[DigitalHumanList] Invalid response data:', response);
+          setDigitalHumans([]);
+        }
+      } catch (error) {
+        console.error('[DigitalHumanList] Failed to fetch digital humans:', error);
+        setDigitalHumans([]);
+      }
     };
 
     fetchDigitalHumans();
@@ -65,15 +82,26 @@ export default function DigitalHumanList({
   };
 
   // 数据转换函数：将后端数据映射为组件需要的格式
-  const mapDigitalHumanData = (human: DigitalHuman): DigitalHumanCardData => ({
-    id: human.id.toString(),
-    name: human.name,
-    description: human.short_description || human.detailed_description || '暂无描述',
-    status: human.status || 'online' as const,
-    chats: human.chats || 0,
-    likes: human.likes || 0,
-    imageUrl: human.imageUrl || human.avatar
-  });
+  const mapDigitalHumanData = (human: DigitalHuman): DigitalHumanCardData => {
+    // 基于已知ID判断权限（临时逻辑，等待后端提供权限信息）
+    const knownInaccessibleIds = ['15', '16', '17']; // 已知无法访问的ID
+    const id = String(human.id);
+    const canAccess = !knownInaccessibleIds.includes(id);
+    
+    return {
+      id: id, // 确保 ID 总是字符串类型
+      name: human.name,
+      description: human.short_description || human.detailed_description || '暂无描述',
+      status: human.status || 'online' as const,
+      chats: human.chats || 0,
+      likes: human.likes || 0,
+      imageUrl: human.imageUrl || human.avatar,
+      // 权限相关字段
+      canAccess: human.canAccess ?? canAccess,
+      accessLevel: human.accessLevel || (canAccess ? 'chat' : 'view'),
+      isOwner: human.isOwner || false
+    };
+  };
 
   return (
     <div className={className}>
@@ -127,7 +155,16 @@ export default function DigitalHumanList({
               {digitalHumans.map((human) => (
                 <DigitalHumanCard
                   key={human.id}
-                  {...human}
+                  id={human.id}
+                  name={human.name}
+                  description={human.description}
+                  status={human.status}
+                  chats={human.chats}
+                  likes={human.likes}
+                  imageUrl={human.imageUrl}
+                  canAccess={human.canAccess}
+                  accessLevel={human.accessLevel}
+                  isOwner={human.isOwner}
                 />
               ))}
               
