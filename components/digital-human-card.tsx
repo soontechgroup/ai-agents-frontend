@@ -31,6 +31,9 @@ export default function DigitalHumanCard({
   accessLevel = 'chat',
   isOwner = false
 }: DigitalHumanCardProps) {
+  // 必须在任何条件返回之前调用所有Hooks
+  const { showToast, ToastContainer } = useToast();
+  
   if (isCreateNew) {
     return (
       <Link
@@ -55,8 +58,6 @@ export default function DigitalHumanCard({
     );
   }
 
-  const { showToast, ToastContainer } = useToast();
-
   // 处理点击事件
   const handleClick = (e: React.MouseEvent) => {
     console.log('[DigitalHumanCard] Clicked digital human:', { id, name, canAccess, accessLevel });
@@ -65,7 +66,7 @@ export default function DigitalHumanCard({
       e.preventDefault();
       showToast({
         message: '您没有权限访问该数字人',
-        type: 'warning'
+        type: 'info'
       });
     } else if (accessLevel === 'view') {
       e.preventDefault();

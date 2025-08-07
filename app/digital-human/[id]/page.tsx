@@ -15,24 +15,7 @@ export default function DigitalHumanChatPage() {
   const router = useRouter();
   const { showToast, ToastContainer } = useToast();
   
-  // 改进 ID 解析，添加验证
-  const id = params.id as string;
-  const numericId = parseInt(id);
-  
-  // 调试日志
-  console.log('[DigitalHumanChat] Navigating to digital human:', { id, numericId });
-  
-  // 验证 ID 是否有效
-  if (!id || isNaN(numericId)) {
-    showToast({ 
-      message: '无效的数字人 ID', 
-      type: 'error' 
-    });
-    router.push('/');
-    return null;
-  }
-
-  // 状态管理
+  // 状态管理 - 必须在任何条件返回之前声明所有Hooks
   const [digitalHuman, setDigitalHuman] = useState<DigitalHuman | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isThinking, setIsThinking] = useState(false);
@@ -41,9 +24,29 @@ export default function DigitalHumanChatPage() {
   const [messageCount, setMessageCount] = useState(1); // 包含欢迎消息
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // 改进 ID 解析，添加验证
+  const id = params.id as string;
+  const numericId = parseInt(id);
+  const isValidId = id && !isNaN(numericId);
+  
+  // 调试日志
+  console.log('[DigitalHumanChat] Navigating to digital human:', { id, numericId });
+  
+  // 处理无效ID
+  useEffect(() => {
+    if (!isValidId) {
+      showToast({ 
+        message: '无效的数字人 ID', 
+        type: 'error' 
+      });
+      router.push('/');
+    }
+  }, [isValidId, router, showToast]);
 
   // 初始化数字人信息和欢迎消息
   useEffect(() => {
+    if (!isValidId) return;
     const loadDigitalHuman = async () => {
       setIsLoading(true);
       setError(null);
@@ -63,18 +66,7 @@ export default function DigitalHumanChatPage() {
             timestamp: new Date()
           }]);
 
-          // 获取推荐话题
-          try {
-            const topicsResponse = await digitalHumanService.getRecommendedTopics(numericId);
-            if (topicsResponse.success && topicsResponse.data) {
-              setDigitalHuman(prev => prev ? {
-                ...prev,
-                topics: topicsResponse.data?.map(topic => topic.text)
-              } : null);
-            }
-          } catch (error) {
-            // 静默处理推荐话题获取失败
-          }
+          // 推荐话题功能已移除，后续可从conversation服务获取
           
           setIsLoading(false);
         } else {
@@ -97,7 +89,7 @@ export default function DigitalHumanChatPage() {
             setError('该数字人不存在或您没有访问权限');
             showToast({
               message: '该数字人不存在或您没有访问权限，即将返回首页',
-              type: 'warning'
+              type: 'error'
             });
           }
         } else {
@@ -113,7 +105,7 @@ export default function DigitalHumanChatPage() {
     };
 
     loadDigitalHuman();
-  }, [numericId, router, showToast]);
+  }, [numericId, router, showToast, isValidId]);
 
   // 发送消息
   const sendMessage = async (content: string, isVoice: boolean = false) => {
@@ -128,36 +120,19 @@ export default function DigitalHumanChatPage() {
     setMessageCount(prev => prev + 1);
     setIsThinking(true);
 
-    try {
-      const response = await digitalHumanService.sendMessage(numericId, {
-        message: content,
-        isVoice
-      });
-
-      if (response.success && response.data) {
-        const aiMessage: ChatMessage = {
-          id: response.data.messageId,
-          type: 'ai',
-          content: response.data.reply,
-          timestamp: new Date()
-        };
-
-        setMessages(prev => [...prev, aiMessage]);
-        setMessageCount(prev => prev + 1);
-      } else {
-        showToast({
-          message: '发送消息失败',
-          type: 'error'
-        });
-      }
-    } catch (error) {
-      showToast({
-        message: '发送消息失败',
-        type: 'error'
-      });
-    } finally {
+    // TODO: 使用conversation服务发送消息
+    // 临时模拟回复
+    setTimeout(() => {
+      const aiMessage: ChatMessage = {
+        id: `ai-${Date.now()}`,
+        type: 'ai',
+        content: '抱歉，聊天功能正在升级中，请稍后再试。',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, aiMessage]);
+      setMessageCount(prev => prev + 1);
       setIsThinking(false);
-    }
+    }, 1000);
   };
 
   // 使用推荐话题
@@ -180,6 +155,17 @@ export default function DigitalHumanChatPage() {
       type: 'info'
     });
   };
+
+  // 无效ID检查
+  if (!isValidId) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[var(--bg-primary)]">
+        <div className="text-center">
+          <p className="text-[var(--text-secondary)]">无效的数字人ID，正在跳转...</p>
+        </div>
+      </div>
+    );
+  }
 
   // 加载状态
   if (isLoading) {

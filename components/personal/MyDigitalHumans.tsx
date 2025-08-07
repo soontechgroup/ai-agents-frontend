@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, Edit, Trash2, MessageCircle, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { digitalHumanService } from '@/lib/api';
@@ -23,7 +23,7 @@ export default function MyDigitalHumans({ onDigitalHumansCountChange, onDataChan
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  const fetchDigitalHumans = async (params: DigitalHumanPageRequest = {}) => {
+  const fetchDigitalHumans = useCallback(async (params: DigitalHumanPageRequest = {}) => {
     if (!user) return;
 
     try {
@@ -62,7 +62,7 @@ export default function MyDigitalHumans({ onDigitalHumansCountChange, onDataChan
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, currentPage, searchQuery, onDigitalHumansCountChange, onDataChange]);
 
   useEffect(() => {
     // 如果有缓存数据且是首次加载，使用缓存
@@ -76,7 +76,7 @@ export default function MyDigitalHumans({ onDigitalHumansCountChange, onDataChan
     }
     
     fetchDigitalHumans();
-  }, [user, currentPage, cachedData]);
+  }, [user, currentPage, cachedData, fetchDigitalHumans, onDigitalHumansCountChange, searchQuery]);
 
   const handleSearch = () => {
     setCurrentPage(1);

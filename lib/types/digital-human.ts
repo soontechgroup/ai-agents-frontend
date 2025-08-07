@@ -92,6 +92,7 @@ export interface DigitalHumanPageRequest {
   page?: number;
   size?: number;
   search?: string;
+  include_public?: boolean;
 }
 
 // 分页响应
