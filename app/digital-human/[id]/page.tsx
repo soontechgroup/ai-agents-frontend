@@ -9,6 +9,8 @@ import ChatInput from '@/components/chat/ChatInput';
 import { DigitalHuman, ChatMessage } from '@/lib/types/digital-human';
 import { useToast } from '@/lib/hooks/useToast';
 import { digitalHumanService } from '@/lib/api/services/digital-human.service';
+import { useConversation } from '@/lib/hooks/useConversation';
+import { Message } from '@/lib/types/conversation';
 
 export default function DigitalHumanChatPage() {
   const params = useParams();
@@ -17,11 +19,8 @@ export default function DigitalHumanChatPage() {
   
   // 状态管理 - 必须在任何条件返回之前声明所有Hooks
   const [digitalHuman, setDigitalHuman] = useState<DigitalHuman | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isThinking, setIsThinking] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [sessionStartTime] = useState(Date.now());
-  const [messageCount, setMessageCount] = useState(1); // 包含欢迎消息
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -30,8 +29,30 @@ export default function DigitalHumanChatPage() {
   const numericId = parseInt(id);
   const isValidId = id && !isNaN(numericId);
   
-  // 调试日志
-  console.log('[DigitalHumanChat] Navigating to digital human:', { id, numericId, isValidId });
+  // 使用会话管理Hook
+  const {
+    conversation,
+    messages: conversationMessages,
+    isLoading: isConversationLoading,
+    isThinking,
+    error: conversationError,
+    sendMessage: sendConversationMessage,
+    clearError,
+    createConversation
+  } = useConversation({
+    digitalHumanId: numericId,
+    autoCreate: false // 手动控制会话创建时机
+  });
+  
+  // 转换消息格式
+  const messages: ChatMessage[] = conversationMessages.map(msg => ({
+    id: msg.id.toString(),
+    type: msg.role === 'user' ? 'user' : 'ai',
+    content: msg.content,
+    timestamp: new Date(msg.created_at)
+  }));
+  
+  const messageCount = messages.length;
   
   // 合并ID验证和数据加载的逻辑，避免重复执行
   useEffect(() => {
@@ -41,7 +62,6 @@ export default function DigitalHumanChatPage() {
 
     // 无效ID直接处理
     if (!isValidId) {
-      console.log('[DigitalHumanChat] Invalid ID, redirecting to home');
       showToast({ 
         message: '无效的数字人 ID', 
         type: 'error' 
@@ -60,28 +80,16 @@ export default function DigitalHumanChatPage() {
       setError(null);
       
       try {
-        console.log('[DigitalHumanChat] Loading digital human with ID:', numericId);
         const digitalHumanData = await digitalHumanService.getDigitalHuman(numericId);
         
         // 检查组件是否还挂载
         if (!isMounted) {
-          console.log('[DigitalHumanChat] Component unmounted, skipping state update');
           return;
         }
 
-        console.log('[DigitalHumanChat] Digital human loaded successfully:', digitalHumanData);
         
         if (digitalHumanData && digitalHumanData.id) {
           setDigitalHuman(digitalHumanData);
-          
-          // 添加欢迎消息
-          setMessages([{
-            id: '1',
-            type: 'ai',
-            content: `嗨，你好！我是${digitalHumanData.name}。\n\n${digitalHumanData.short_description || digitalHumanData.detailed_description || '很高兴与你对话！有什么我可以帮助你的吗？'}`,
-            timestamp: new Date()
-          }]);
-
           setIsLoading(false);
         } else {
           console.error('[DigitalHumanChat] No valid data found:', digitalHumanData);
@@ -101,7 +109,6 @@ export default function DigitalHumanChatPage() {
         
         // 检查组件是否还挂载
         if (!isMounted) {
-          console.log('[DigitalHumanChat] Component unmounted, skipping error handling');
           return;
         }
 
@@ -143,33 +150,40 @@ export default function DigitalHumanChatPage() {
       }
     };
   }, [numericId, isValidId]); // 只依赖于稳定的值，移除 router 和 showToast
+  
+  // 数字人加载成功后，创建会话
+  useEffect(() => {
+    if (digitalHuman && !conversation && !isConversationLoading) {
+      // 使用 Hook 提供的 createConversation 方法，确保状态同步
+      createConversation();
+    }
+  }, [digitalHuman, conversation, isConversationLoading, createConversation]);
 
   // 发送消息
-  const sendMessage = async (content: string, isVoice: boolean = false) => {
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: 'user',
-      content,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setMessageCount(prev => prev + 1);
-    setIsThinking(true);
-
-    // TODO: 使用conversation服务发送消息
-    // 临时模拟回复
-    setTimeout(() => {
-      const aiMessage: ChatMessage = {
-        id: `ai-${Date.now()}`,
-        type: 'ai',
-        content: '抱歉，聊天功能正在升级中，请稍后再试。',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, aiMessage]);
-      setMessageCount(prev => prev + 1);
-      setIsThinking(false);
-    }, 1000);
+  const sendMessage = async (content: string) => {
+    if (!conversation) {
+      showToast({
+        message: '会话未初始化，请刷新页面重试',
+        type: 'error'
+      });
+      return;
+    }
+    
+    // 清除之前的错误
+    if (conversationError) {
+      clearError();
+    }
+    
+    // 使用会话管理Hook发送消息
+    await sendConversationMessage(content);
+    
+    // 如果发送失败，显示错误提示
+    if (conversationError) {
+      showToast({
+        message: conversationError,
+        type: 'error'
+      });
+    }
   };
 
   // 使用推荐话题
@@ -205,12 +219,14 @@ export default function DigitalHumanChatPage() {
   }
 
   // 加载状态
-  if (isLoading) {
+  if (isLoading || (digitalHuman && !conversation && isConversationLoading)) {
     return (
       <div className="flex items-center justify-center h-screen bg-[var(--bg-primary)]">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--accent-primary)]"></div>
-          <p className="mt-4 text-[var(--text-secondary)]">正在加载数字人信息...</p>
+          <p className="mt-4 text-[var(--text-secondary)]">
+            {isLoading ? '正在加载数字人信息...' : '正在初始化会话...'}
+          </p>
         </div>
       </div>
     );
@@ -260,7 +276,34 @@ export default function DigitalHumanChatPage() {
       {/* 侧边栏 */}
       <ChatSidebar 
         digitalHuman={digitalHuman}
+        currentConversation={conversation}
         onUseTopic={useTopic}
+        onNewConversation={async () => {
+          // 创建新会话
+          const { conversationService } = await import('@/lib/api/services/conversation.service');
+          try {
+            const response = await conversationService.createConversation({
+              digital_human_id: digitalHuman.id,
+              title: `与${digitalHuman.name}的新对话`
+            });
+            if (response.data) {
+              // 刷新页面以加载新会话
+              window.location.reload();
+            }
+          } catch (error) {
+            showToast({
+              message: '创建新会话失败',
+              type: 'error'
+            });
+          }
+        }}
+        onSelectConversation={() => {
+          // 切换会话 - 暂时通过刷新页面实现
+          showToast({
+            message: '会话切换功能即将推出',
+            type: 'info'
+          });
+        }}
       />
 
       {/* 主内容区 */}
@@ -285,6 +328,8 @@ export default function DigitalHumanChatPage() {
         {/* 输入区域 */}
         <ChatInput
           onSendMessage={sendMessage}
+          isDisabled={!conversation || isConversationLoading}
+          isSending={isThinking}
         />
       </main>
 

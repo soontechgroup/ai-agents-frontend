@@ -9,9 +9,10 @@ interface ChatDialogueProps {
   messages: ChatMessageType[];
   isThinking: boolean;
   digitalHumanAvatar?: string;
+  streamingMessageId?: string; // 正在流式更新的消息ID
 }
 
-export default function ChatDialogue({ messages, isThinking, digitalHumanAvatar }: ChatDialogueProps) {
+export default function ChatDialogue({ messages, isThinking, digitalHumanAvatar, streamingMessageId }: ChatDialogueProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // 自动滚动到底部
@@ -27,15 +28,21 @@ export default function ChatDialogue({ messages, isThinking, digitalHumanAvatar 
         ref={scrollRef}
         className="flex-1 overflow-y-auto px-12 py-8 space-y-6 scrollbar-thin scrollbar-thumb-[var(--border-default)] scrollbar-track-transparent"
       >
-        {messages.map(message => (
-          <ChatMessage 
-            key={message.id} 
-            message={message} 
-            digitalHumanAvatar={digitalHumanAvatar}
-          />
-        ))}
+        {messages.map((message, index) => {
+          const isLastMessage = index === messages.length - 1;
+          const isStreaming = isThinking && isLastMessage && message.type === 'ai' && message.content !== '';
+          
+          return (
+            <ChatMessage 
+              key={message.id} 
+              message={message} 
+              digitalHumanAvatar={digitalHumanAvatar}
+              isStreaming={isStreaming}
+            />
+          );
+        })}
         
-        {isThinking && (
+        {isThinking && messages.length > 0 && messages[messages.length - 1].type === 'user' && (
           <ThinkingBubble digitalHumanAvatar={digitalHumanAvatar} />
         )}
       </div>

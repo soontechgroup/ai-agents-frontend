@@ -5,9 +5,11 @@ import { Mic, Send } from 'lucide-react';
 
 interface ChatInputProps {
   onSendMessage: (message: string, isVoice?: boolean) => void;
+  isDisabled?: boolean; // 是否禁用输入
+  isSending?: boolean; // 是否正在发送
 }
 
-export default function ChatInput({ onSendMessage }: ChatInputProps) {
+export default function ChatInput({ onSendMessage, isDisabled = false, isSending = false }: ChatInputProps) {
   const [text, setText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -91,7 +93,7 @@ export default function ChatInput({ onSendMessage }: ChatInputProps) {
   // 发送文字消息
   const handleSendMessage = () => {
     const trimmedText = text.trim();
-    if (!trimmedText) return;
+    if (!trimmedText || isDisabled || isSending) return;
 
     onSendMessage(trimmedText);
     setText('');
@@ -157,10 +159,11 @@ export default function ChatInput({ onSendMessage }: ChatInputProps) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder={isRecording ? "正在听您说话..." : "输入消息..."}
-            className="flex-1 px-3 py-1 bg-transparent text-[var(--text-primary)] text-sm resize-none outline-none min-h-[36px] max-h-[120px] leading-relaxed placeholder:text-[var(--text-muted)]"
+            placeholder={isRecording ? "正在听您说话..." : isSending ? "消息发送中..." : "输入消息..."}
+            className="flex-1 px-3 py-1 bg-transparent text-[var(--text-primary)] text-sm resize-none outline-none min-h-[36px] max-h-[120px] leading-relaxed placeholder:text-[var(--text-muted)] disabled:opacity-50"
             rows={1}
             readOnly={isRecording}
+            disabled={isDisabled || isSending}
           />
 
           {/* 语音识别指示器 */}
@@ -176,10 +179,19 @@ export default function ChatInput({ onSendMessage }: ChatInputProps) {
           {text && !isRecording && (
             <button
               onClick={handleSendMessage}
-              className="text-[var(--accent-primary)] flex items-center justify-center pr-2 transition-all duration-300 hover:scale-110 active:scale-90"
-              title="发送"
+              className={`text-[var(--accent-primary)] flex items-center justify-center pr-2 transition-all duration-300 ${
+                isDisabled || isSending 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : 'hover:scale-110 active:scale-90'
+              }`}
+              title={isSending ? "发送中..." : "发送"}
+              disabled={isDisabled || isSending}
             >
-              <Send size={20} />
+              {isSending ? (
+                <div className="w-5 h-5 border-2 border-[var(--accent-primary)] border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Send size={20} />
+              )}
             </button>
           )}
         </div>
@@ -187,10 +199,15 @@ export default function ChatInput({ onSendMessage }: ChatInputProps) {
         {/* 麦克风按钮 */}
         <button
           onClick={toggleVoiceRecognition}
-          className={`w-12 h-12 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] text-[var(--bg-primary)] text-xl flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 ${
+          className={`w-12 h-12 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] text-[var(--bg-primary)] text-xl flex items-center justify-center transition-all duration-300 ${
+            isDisabled || isSending 
+              ? 'opacity-50 cursor-not-allowed' 
+              : 'cursor-pointer hover:scale-105 active:scale-95'
+          } ${
             isRecording ? 'animate-pulse shadow-[var(--shadow-lg),var(--glow-md)]' : 'shadow-[var(--shadow-md)]'
           }`}
           title={isRecording ? "停止语音输入" : "开始语音输入"}
+          disabled={isDisabled || isSending}
         >
           <Mic size={20} className={isRecording ? 'animate-pulse' : ''} />
         </button>

@@ -1,13 +1,15 @@
 'use client';
 
 import { ChatMessage as ChatMessageType } from '@/lib/types/digital-human';
+import StreamingMessage from './StreamingMessage';
 
 interface ChatMessageProps {
   message: ChatMessageType;
   digitalHumanAvatar?: string;
+  isStreaming?: boolean;
 }
 
-export default function ChatMessage({ message, digitalHumanAvatar = '🎤' }: ChatMessageProps) {
+export default function ChatMessage({ message, digitalHumanAvatar = '🎤', isStreaming = false }: ChatMessageProps) {
   const isUser = message.type === 'user';
   const time = message.timestamp.toLocaleTimeString('zh-CN', { 
     hour: '2-digit', 
@@ -35,11 +37,19 @@ export default function ChatMessage({ message, digitalHumanAvatar = '🎤' }: Ch
             : 'bg-[var(--bg-tertiary)] border-[var(--border-default)]'
         }`}
       >
-        <p className={`leading-relaxed whitespace-pre-line ${
+        <div className={`leading-relaxed ${
           isUser ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'
         }`}>
-          {message.content}
-        </p>
+          {!isUser && isStreaming ? (
+            <StreamingMessage 
+              content={message.content} 
+              isStreaming={true}
+              speed={10}
+            />
+          ) : (
+            <p className="whitespace-pre-line">{message.content}</p>
+          )}
+        </div>
         <div className="text-xs text-[var(--text-muted)] mt-2">
           {time}
         </div>

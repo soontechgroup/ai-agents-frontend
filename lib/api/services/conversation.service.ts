@@ -15,6 +15,7 @@ import {
   ConversationWithMessages,
   Message
 } from '@/lib/types/conversation';
+import { SSEStreamProcessor, ParsedSSEData } from '@/lib/utils/sse-parser';
 
 class ConversationService {
   private readonly basePath = '/api/v1/conversations';
@@ -101,10 +102,41 @@ class ConversationService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'text/event-stream'
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify({
+        ...data,
+        stream: true // 确保启用流式响应
+      })
     });
+  }
+  
+  /**
+   * 读取流式响应并解析SSE数据
+   */
+  async *readChatStream(response: Response): AsyncGenerator<ParsedSSEData> {
+    if (!response.body) {
+      throw new Error('Response body is empty');
+    }
+    
+    const reader = response.body.getReader();
+    const processor = new SSEStreamProcessor();
+    
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) break;
+        
+        const messages = processor.processChunk(value);
+        for (const message of messages) {
+          yield message;
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
   }
 
   async clearConversationHistory(data: ConversationClearRequest): Promise<ApiResponse<void>> {
