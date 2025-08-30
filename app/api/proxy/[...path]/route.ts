@@ -6,37 +6,42 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://34.129.46.22:8000
 // 处理所有 HTTP 方法
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return handleRequest(request, params.path, 'GET');
+  const { path } = await params;
+  return handleRequest(request, path, 'GET');
 }
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return handleRequest(request, params.path, 'POST');
+  const { path } = await params;
+  return handleRequest(request, path, 'POST');
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return handleRequest(request, params.path, 'PUT');
+  const { path } = await params;
+  return handleRequest(request, path, 'PUT');
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return handleRequest(request, params.path, 'DELETE');
+  const { path } = await params;
+  return handleRequest(request, path, 'DELETE');
 }
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  return handleRequest(request, params.path, 'PATCH');
+  const { path } = await params;
+  return handleRequest(request, path, 'PATCH');
 }
 
 // 统一处理请求
