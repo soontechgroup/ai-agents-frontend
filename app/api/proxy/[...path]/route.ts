@@ -50,6 +50,11 @@ async function handleRequest(
   path: string[],
   method: string
 ) {
+  console.log('=== Proxy Debug Start ===');
+  console.log('Method:', method);
+  console.log('Path array:', path);
+  console.log('BACKEND_URL from env:', BACKEND_URL);
+  
   try {
     // 构建目标 URL
     const targetUrl = `${BACKEND_URL}/${path.join('/')}`;
@@ -57,6 +62,9 @@ async function handleRequest(
     // 获取查询参数
     const searchParams = request.nextUrl.searchParams.toString();
     const fullUrl = searchParams ? `${targetUrl}?${searchParams}` : targetUrl;
+    
+    console.log('Target URL built:', fullUrl);
+    console.log('About to fetch from backend...');
 
     // 准备请求头
     const headers = new Headers();
@@ -95,7 +103,51 @@ async function handleRequest(
     }
 
     // 发送请求到后端
-    const response = await fetch(fullUrl, fetchOptions);
+    console.log('Sending fetch request with options:', {
+      method: fetchOptions.method,
+      headers: Object.fromEntries(headers.entries()),
+      bodyLength: fetchOptions.body ? String(fetchOptions.body).length : 0
+    });
+    
+    const startTime = Date.now();
+    let response;
+    
+    try {
+      // 添加超时控制
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8秒超时
+      
+      response = await fetch(fullUrl, {
+        ...fetchOptions,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      const elapsed = Date.now() - startTime;
+      console.log(`Fetch completed in ${elapsed}ms, status: ${response.status}`);
+      
+    } catch (fetchError) {
+      const elapsed = Date.now() - startTime;
+      console.error('Fetch failed after', elapsed, 'ms');
+      console.error('Fetch error type:', fetchError.constructor.name);
+      console.error('Fetch error message:', fetchError.message);
+      console.error('Fetch error details:', fetchError);
+      
+      // 返回更详细的错误信息
+      return NextResponse.json(
+        {
+          error: 'Backend fetch failed',
+          message: fetchError.message,
+          details: {
+            url: fullUrl,
+            errorType: fetchError.constructor.name,
+            elapsed: elapsed,
+            backend: BACKEND_URL
+          }
+        },
+        { status: 502 }
+      );
+    }
 
     // 准备响应头
     const responseHeaders = new Headers();
@@ -119,6 +171,9 @@ async function handleRequest(
       responseBody = await response.text();
     }
 
+    console.log('Response body type:', typeof responseBody);
+    console.log('=== Proxy Debug End (Success) ===');
+    
     // 返回响应
     return NextResponse.json(
       responseBody,
@@ -128,7 +183,10 @@ async function handleRequest(
       }
     );
   } catch (error) {
-    console.error('Proxy error:', error);
+    console.error('=== Proxy Debug End (Error) ===');
+    console.error('Proxy general error:', error);
+    console.error('Error type:', error.constructor.name);
+    console.error('Error message:', error.message);
     
     // 返回错误响应
     return NextResponse.json(
