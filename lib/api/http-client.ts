@@ -8,8 +8,18 @@ class HttpClient {
     if (baseURL) {
       this.baseURL = baseURL;
     } else {
-      // 默认使用环境变量或本地地址
-      this.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      // 检查是否在生产环境的 HTTPS 页面
+      const isProductionHTTPS = typeof window !== 'undefined' && 
+                                window.location.protocol === 'https:' &&
+                                window.location.hostname !== 'localhost';
+      
+      if (isProductionHTTPS) {
+        // 生产环境 HTTPS 使用代理路径
+        this.baseURL = '/api/proxy';
+      } else {
+        // 开发环境或本地访问使用直接地址
+        this.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      }
     }
     
     this.defaultHeaders = {
@@ -25,14 +35,17 @@ class HttpClient {
 
   // 构建完整的 URL
   private buildURL(endpoint: string, params?: Record<string, any>): string {
-    // 在浏览器环境且是 HTTPS 时，使用相对路径
-    let baseURL = this.baseURL;
-    if (typeof window !== 'undefined' && window.location.protocol === 'https:' && this.baseURL.startsWith('http://')) {
-      // HTTPS 页面访问 HTTP API，使用相对路径让 Next.js rewrites 处理
-      baseURL = '';
-    }
+    // 处理不同的 baseURL 格式
+    let url: URL;
     
-    const url = new URL(`${baseURL}${endpoint}`, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001');
+    if (this.baseURL === '/api/proxy' || this.baseURL === '') {
+      // 使用代理路径时，构建相对 URL
+      const fullPath = `${this.baseURL}${endpoint}`;
+      url = new URL(fullPath, typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001');
+    } else {
+      // 使用完整的 baseURL
+      url = new URL(`${this.baseURL}${endpoint}`);
+    }
     
     if (params) {
       Object.keys(params).forEach(key => {
