@@ -52,7 +52,7 @@ async function handleRequest(
 ) {
   try {
     // 构建目标 URL
-    const targetUrl = `${BACKEND_URL}/api/${path.join('/')}`;
+    const targetUrl = `${BACKEND_URL}/${path.join('/')}`;
     
     // 获取查询参数
     const searchParams = request.nextUrl.searchParams.toString();
