@@ -129,18 +129,23 @@ async function handleRequest(
     } catch (fetchError) {
       const elapsed = Date.now() - startTime;
       console.error('Fetch failed after', elapsed, 'ms');
-      console.error('Fetch error type:', fetchError.constructor.name);
-      console.error('Fetch error message:', fetchError.message);
+      
+      // 类型安全的错误处理
+      const errorMessage = fetchError instanceof Error ? fetchError.message : 'Unknown error';
+      const errorType = fetchError instanceof Error ? fetchError.constructor.name : typeof fetchError;
+      
+      console.error('Fetch error type:', errorType);
+      console.error('Fetch error message:', errorMessage);
       console.error('Fetch error details:', fetchError);
       
       // 返回更详细的错误信息
       return NextResponse.json(
         {
           error: 'Backend fetch failed',
-          message: fetchError.message,
+          message: errorMessage,
           details: {
             url: fullUrl,
-            errorType: fetchError.constructor.name,
+            errorType: errorType,
             elapsed: elapsed,
             backend: BACKEND_URL
           }
@@ -185,8 +190,12 @@ async function handleRequest(
   } catch (error) {
     console.error('=== Proxy Debug End (Error) ===');
     console.error('Proxy general error:', error);
-    console.error('Error type:', error.constructor.name);
-    console.error('Error message:', error.message);
+    
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorType = error instanceof Error ? error.constructor.name : typeof error;
+    
+    console.error('Error type:', errorType);
+    console.error('Error message:', errorMessage);
     
     // 返回错误响应
     return NextResponse.json(
