@@ -43,7 +43,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       // 设置 cookie 用于中间件
-      document.cookie = `token=${token}; path=/; max-age=86400; SameSite=Lax`;
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 1);
+      document.cookie = `token=${token}; path=/; expires=${expiryDate.toUTCString()}; SameSite=Strict`;
     } catch (error) {
       console.error('Token verification failed:', error);
       localStorage.removeItem('token');
@@ -70,8 +72,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.data?.access_token) {
         localStorage.setItem('token', response.data.access_token);
         
-        // 设置 cookie
-        document.cookie = `token=${response.data.access_token}; path=/; max-age=86400; SameSite=Lax`;
+        // 设置 cookie - 使用更可靠的设置
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 1); // 1天后过期
+        document.cookie = `token=${response.data.access_token}; path=/; expires=${expiryDate.toUTCString()}; SameSite=Strict`;
         
         // 获取用户信息
         await verifyToken();
@@ -113,7 +117,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           if (loginResponse.data?.access_token) {
             localStorage.setItem('token', loginResponse.data.access_token);
-            document.cookie = `token=${loginResponse.data.access_token}; path=/; max-age=86400; SameSite=Lax`;
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 1);
+            document.cookie = `token=${loginResponse.data.access_token}; path=/; expires=${expiryDate.toUTCString()}; SameSite=Strict`;
             
             // 获取用户信息
             await verifyToken();
