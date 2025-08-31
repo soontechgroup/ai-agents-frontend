@@ -62,7 +62,7 @@ export default function MyDigitalHumans({ onDigitalHumansCountChange, onDataChan
     } finally {
       setLoading(false);
     }
-  }, [user, currentPage, searchQuery, onDigitalHumansCountChange, onDataChange]);
+  }, [user, currentPage, searchQuery]); // 移除会导致循环的依赖
 
   useEffect(() => {
     // 如果有缓存数据且是首次加载，使用缓存
@@ -71,12 +71,12 @@ export default function MyDigitalHumans({ onDigitalHumansCountChange, onDataChan
       setTotalPages(cachedData.totalPages || 1);
       setTotalCount(cachedData.totalCount || 0);
       setLoading(false);
-      onDigitalHumansCountChange?.(cachedData.totalCount || 0);
+      // 移除这里的回调调用，避免循环
       return;
     }
     
     fetchDigitalHumans();
-  }, [user, currentPage, cachedData, fetchDigitalHumans, onDigitalHumansCountChange, searchQuery]);
+  }, [user, currentPage, searchQuery, cachedData, fetchDigitalHumans]);
 
   const handleSearch = () => {
     setCurrentPage(1);
