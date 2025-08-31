@@ -9,9 +9,9 @@ export default function BottomNav() {
 
   const navItems = [
     { href: '/', icon: <Home size={24} />, label: '首页' },
-    { href: '/chat', icon: <MessageCircle size={24} />, label: '会话' },
-    { href: '/books', icon: <BookOpen size={24} />, label: '书单' },
-    { href: '/profile', icon: <User size={24} />, label: '我的' },
+    { href: '/personal', icon: <MessageCircle size={24} />, label: '会话' },
+    { href: '/create', icon: <BookOpen size={24} />, label: '创建' },
+    { href: '/personal', icon: <User size={24} />, label: '我的' },
   ];
 
   return (

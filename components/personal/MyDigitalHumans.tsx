@@ -62,7 +62,7 @@ export default function MyDigitalHumans({ onDigitalHumansCountChange, onDataChan
     } finally {
       setLoading(false);
     }
-  }, [user, currentPage, searchQuery, onDigitalHumansCountChange, onDataChange]);
+  }, [user, currentPage, searchQuery]);
 
   useEffect(() => {
     // 如果有缓存数据且是首次加载，使用缓存
@@ -76,7 +76,7 @@ export default function MyDigitalHumans({ onDigitalHumansCountChange, onDataChan
     }
     
     fetchDigitalHumans();
-  }, [user, currentPage, cachedData, fetchDigitalHumans, onDigitalHumansCountChange, searchQuery]);
+  }, [user, currentPage, searchQuery, fetchDigitalHumans]);
 
   const handleSearch = () => {
     setCurrentPage(1);

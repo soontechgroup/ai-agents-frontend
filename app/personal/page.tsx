@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/components/providers/auth-provider';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Navbar from '@/components/navbar';
 import ProfileCard from '@/components/personal/ProfileCard';
 import PersonalInfo from '@/components/personal/PersonalInfo';
@@ -34,17 +34,17 @@ export default function PersonalCentre() {
   
 
   // 处理数字人数量变化
-  const handleDigitalHumansCountChange = (count: number) => {
+  const handleDigitalHumansCountChange = useCallback((count: number) => {
     setUserStats(prev => ({
       ...prev,
       digitalHumans: count
     }));
-  };
+  }, []);
 
   // 处理数字人数据缓存
-  const handleDigitalHumansDataChange = (data: any) => {
+  const handleDigitalHumansDataChange = useCallback((data: any) => {
     setDigitalHumansCache(data);
-  };
+  }, []);
 
   // 处理标签切换，每次都从顶部开始
   const handleTabChange = (tab: 'digital-humans' | 'training' | 'conversations') => {
