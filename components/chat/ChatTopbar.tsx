@@ -1,7 +1,8 @@
 'use client';
 
-import { ArrowLeft, Star, Share2, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Star, Share2, MessageCircle, Brain } from 'lucide-react';
 import { DigitalHuman } from '@/lib/types/digital-human';
+import { useRouter } from 'next/navigation';
 
 interface ChatTopbarProps {
   digitalHuman: DigitalHuman;
@@ -22,6 +23,8 @@ export default function ChatTopbar({
   onToggleFavorite,
   onShare
 }: ChatTopbarProps) {
+  const router = useRouter();
+  
   return (
     <header className="h-16 bg-[rgba(26,26,46,0.8)] backdrop-blur-[20px] border-b border-[var(--border-default)] flex items-center px-8 gap-8">
       {/* 返回按钮 */}
@@ -48,6 +51,14 @@ export default function ChatTopbar({
 
       {/* 操作按钮 */}
       <div className="flex gap-4">
+        <button
+          onClick={() => router.push(`/digital-human/${digitalHuman.id}/memory`)}
+          className="px-4 py-2 bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded-lg text-sm flex items-center gap-2 transition-all duration-300 hover:bg-[rgba(0,217,255,0.1)] hover:border-[var(--accent-primary)]"
+        >
+          <Brain size={16} />
+          <span className="text-[var(--text-primary)]">记忆体</span>
+        </button>
+        
         <button
           onClick={onToggleFavorite}
           className="px-4 py-2 bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded-lg text-sm flex items-center gap-2 transition-all duration-300 hover:bg-[rgba(0,217,255,0.1)] hover:border-[var(--accent-primary)]"
