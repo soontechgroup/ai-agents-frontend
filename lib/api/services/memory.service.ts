@@ -19,7 +19,7 @@ export class MemoryService {
    */
   async getMemoryGraph(digitalHumanId: string, limit: number = 100): Promise<ApiResponse<MemoryGraphResponse>> {
     try {
-      const response = await this.httpClient.post<MemoryGraphResponse>('/digital-humans/memory-graph', {
+      const response = await this.httpClient.post<MemoryGraphResponse>('/api/v1/digital-humans/memory-graph', {
         digital_human_id: parseInt(digitalHumanId),
         limit
       });

@@ -5,8 +5,7 @@ import {
   ForceGraphData,
   ForceGraphNode,
   ForceGraphLink,
-  MemoryType,
-  NODE_COLORS
+  getNodeColor
 } from '@/lib/types/memory';
 
 /**
@@ -19,7 +18,7 @@ export function convertToForceGraphData(data: KnowledgeGraphData): ForceGraphDat
     label: node.label,
     type: node.type,
     size: node.size || 5,
-    color: node.color || NODE_COLORS[node.type],
+    color: node.color || (node.confidence ? getNodeColor(node.confidence) : '#6B7280'),
     x: node.x,
     y: node.y,
     value: node.size  // 用于力导向图的节点权重
@@ -88,7 +87,7 @@ export function getNodeLinks(
 export function filterGraphData(
   data: ForceGraphData,
   filter: {
-    types?: MemoryType[];
+    types?: string[];
     searchQuery?: string;
     minNodeSize?: number;
   }
@@ -215,19 +214,20 @@ export function getGraphBounds(data: ForceGraphData) {
  * 生成模拟的力导向图数据
  */
 export function generateMockForceGraphData(nodeCount: number = 30): ForceGraphData {
-  const types = Object.values(MemoryType);
+  const types = ['entity', 'concept', 'event', 'relation'];
   const nodes: ForceGraphNode[] = [];
   const links: ForceGraphLink[] = [];
   
   // 生成节点
   for (let i = 0; i < nodeCount; i++) {
     const type = types[Math.floor(Math.random() * types.length)];
+    const confidence = Math.random();
     nodes.push({
       id: i,
       label: `节点 ${i}`,
       type,
       size: Math.random() * 10 + 5,
-      color: NODE_COLORS[type],
+      color: getNodeColor(confidence),
       description: `这是节点 ${i} 的描述信息`,
       group: Math.floor(Math.random() * 4),
       value: Math.random() * 100
