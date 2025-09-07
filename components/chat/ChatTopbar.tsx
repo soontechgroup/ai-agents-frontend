@@ -52,6 +52,14 @@ export default function ChatTopbar({
       {/* 操作按钮 */}
       <div className="flex gap-4">
         <button
+          onClick={() => router.push(`/digital-human/${digitalHuman.id}/training`)}
+          className="px-4 py-2 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border border-purple-500/30 rounded-lg text-sm flex items-center gap-2 transition-all duration-300 hover:from-purple-500/20 hover:to-cyan-500/20 hover:border-purple-500/50"
+        >
+          <Brain size={16} className="text-purple-400" />
+          <span className="text-purple-400">训练</span>
+        </button>
+        
+        <button
           onClick={() => router.push(`/digital-human/${digitalHuman.id}/memory`)}
           className="px-4 py-2 bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded-lg text-sm flex items-center gap-2 transition-all duration-300 hover:bg-[rgba(0,217,255,0.1)] hover:border-[var(--accent-primary)]"
         >

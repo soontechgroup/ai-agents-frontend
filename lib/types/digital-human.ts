@@ -102,3 +102,55 @@ export interface DigitalHumanPageResponse {
   data: DigitalHuman[];
   pagination: PaginationMeta;
 }
+
+// 训练相关类型
+export interface TrainingMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+  extractedKnowledge?: ExtractedKnowledge;
+}
+
+export interface ExtractedKnowledge {
+  entities: Array<{
+    name: string;
+    type: string;
+    properties?: Record<string, any>;
+  }>;
+  relationships: Array<{
+    source: string;
+    target: string;
+    type: string;
+  }>;
+}
+
+export interface ThinkingStep {
+  stage: string;
+  detail: string;
+  timestamp?: string;
+}
+
+export interface TrainingEvent {
+  type: 'user_message' | 'assistant_question' | 'thinking' | 'node_start' | 'node_complete' | 'knowledge_extracted' | 'error';
+  node?: string;
+  message?: string;
+  data?: any;
+  result?: any;
+  timestamp?: string;
+}
+
+export interface TrainingProgress {
+  conversationRounds: number;
+  effectiveTraining: number;
+  trainingQuality: 'excellent' | 'good' | 'average' | 'poor';
+  progressPercentage: number;
+}
+
+export interface TrainingState {
+  isTraining: boolean;
+  currentStage?: string;
+  thinkingSteps: ThinkingStep[];
+  messages: TrainingMessage[];
+  progress: TrainingProgress;
+}
