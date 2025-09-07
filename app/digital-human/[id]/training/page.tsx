@@ -36,7 +36,7 @@ export default function DigitalHumanTrainingPage() {
   useEffect(() => {
     const loadDigitalHuman = async () => {
       if (!id || isNaN(numericId)) {
-        showToast('无效的数字人ID', 'error');
+        showToast({ message: '无效的数字人ID', type: 'error' });
         router.push('/');
         return;
       }
@@ -55,7 +55,7 @@ export default function DigitalHumanTrainingPage() {
         }]);
       } catch (error) {
         console.error('加载数字人失败:', error);
-        showToast('加载数字人信息失败', 'error');
+        showToast({ message: '加载数字人信息失败', type: 'error' });
         router.push('/');
       } finally {
         setIsLoading(false);
@@ -121,12 +121,12 @@ export default function DigitalHumanTrainingPage() {
         // 可以在这里显示知识提取的可视化
         if (event.data && Array.isArray(event.data)) {
           const entityCount = event.data.length;
-          showToast(`提取了 ${entityCount} 个知识点`, 'success');
+          showToast({ message: `提取了 ${entityCount} 个知识点`, type: 'success' });
         }
         break;
         
       case 'error':
-        showToast(event.data || '训练过程出现错误', 'error');
+        showToast({ message: event.data || '训练过程出现错误', type: 'error' });
         setIsTraining(false);
         break;
     }
@@ -182,7 +182,7 @@ export default function DigitalHumanTrainingPage() {
         handleTrainingEvent,
         (error) => {
           console.error('训练错误:', error);
-          showToast('训练过程出现错误', 'error');
+          showToast({ message: '训练过程出现错误', type: 'error' });
           setIsTraining(false);
         },
         () => {
@@ -191,7 +191,7 @@ export default function DigitalHumanTrainingPage() {
       );
     } catch (error) {
       console.error('发送训练消息失败:', error);
-      showToast('发送消息失败', 'error');
+      showToast({ message: '发送消息失败', type: 'error' });
       setIsTraining(false);
     }
   };

@@ -27,8 +27,6 @@ export function KnowledgeGraph({ data, onNodeClick }: KnowledgeGraphProps) {
   const [highlightNodes, setHighlightNodes] = useState<Set<string | number>>(new Set());
   const [highlightLinks, setHighlightLinks] = useState<Set<string>>(new Set());
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; node: ForceGraphNode } | null>(null);
-  const graphRef = useRef<any>();
-
   // 转换数据格式
   useEffect(() => {
     if (data) {
@@ -111,9 +109,9 @@ export function KnowledgeGraph({ data, onNodeClick }: KnowledgeGraphProps) {
         // 固定/取消固定节点
         const nodeData = forceGraphData.nodes.find(n => n.id === node.id);
         if (nodeData) {
-          if (nodeData.fx !== null) {
-            nodeData.fx = null;
-            nodeData.fy = null;
+          if (nodeData.fx !== undefined) {
+            nodeData.fx = undefined;
+            nodeData.fy = undefined;
           } else {
             nodeData.fx = nodeData.x;
             nodeData.fy = nodeData.y;
@@ -130,7 +128,6 @@ export function KnowledgeGraph({ data, onNodeClick }: KnowledgeGraphProps) {
     <div className="relative w-full h-full">
       {/* 主图 */}
       <ForceGraph
-        ref={graphRef}
         data={forceGraphData}
         onNodeClick={handleNodeClick}
         onNodeRightClick={handleNodeRightClick}

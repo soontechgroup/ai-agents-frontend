@@ -28,7 +28,7 @@ export const ForceGraph = forwardRef<any, ForceGraphProps>(({
   width,
   height
 }, ref) => {
-  const fgRef = useRef<any>();
+  const fgRef = useRef<any>(null);
   const [hoveredNode, setHoveredNode] = useState<ForceGraphNode | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });

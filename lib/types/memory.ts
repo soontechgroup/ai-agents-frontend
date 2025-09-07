@@ -90,8 +90,8 @@ export interface ForceGraphNode {
   value?: number;
   x?: number;
   y?: number;
-  fx?: number | null;  // 固定x坐标
-  fy?: number | null;  // 固定y坐标
+  fx?: number;  // 固定x坐标
+  fy?: number;  // 固定y坐标
   vx?: number;  // 速度x
   vy?: number;  // 速度y
 }
