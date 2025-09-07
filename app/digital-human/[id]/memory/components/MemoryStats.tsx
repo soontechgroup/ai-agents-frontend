@@ -1,15 +1,22 @@
 import { MemoryStats as MemoryStatsType } from '@/lib/types/memory';
 
 interface MemoryStatsProps {
-  stats: MemoryStatsType;
+  stats: MemoryStatsType | null;
 }
 
 export function MemoryStats({ stats }: MemoryStatsProps) {
+  const displayStats = stats || {
+    totalNodes: 0,
+    totalEdges: 0,
+    documentCount: 0,
+    vectorCoverage: 0
+  };
+
   const statItems = [
-    { label: '记忆节点', value: stats.totalNodes.toLocaleString(), color: 'from-cyan-500 to-cyan-600' },
-    { label: '关系连接', value: stats.totalEdges.toLocaleString(), color: 'from-purple-500 to-purple-600' },
-    { label: '文档片段', value: stats.documentCount.toLocaleString(), color: 'from-green-500 to-green-600' },
-    { label: '向量覆盖', value: `${stats.vectorCoverage}%`, color: 'from-yellow-500 to-yellow-600' }
+    { label: '记忆节点', value: displayStats.totalNodes.toLocaleString(), color: 'from-cyan-500 to-cyan-600' },
+    { label: '关系连接', value: displayStats.totalEdges.toLocaleString(), color: 'from-purple-500 to-purple-600' },
+    { label: '文档片段', value: displayStats.documentCount.toLocaleString(), color: 'from-green-500 to-green-600' },
+    { label: '向量覆盖', value: `${displayStats.vectorCoverage}%`, color: 'from-yellow-500 to-yellow-600' }
   ];
 
   return (
