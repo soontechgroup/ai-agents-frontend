@@ -37,7 +37,6 @@ export function KnowledgeGraph({ data, onNodeClick }: KnowledgeGraphProps) {
 
   // 处理节点点击
   const handleNodeClick = useCallback((node: ForceGraphNode) => {
-    console.log('KnowledgeGraph - Node clicked:', node.label, node.id);
     setSelectedNode(node.id);
     
     // 高亮相邻节点和边
@@ -95,11 +94,9 @@ export function KnowledgeGraph({ data, onNodeClick }: KnowledgeGraphProps) {
     switch (action) {
       case 'expand':
         // 展开节点逻辑
-        console.log('展开节点:', node.label);
         break;
       case 'hide':
         // 隐藏节点逻辑
-        console.log('隐藏节点:', node.label);
         break;
       case 'details':
         // 查看详情

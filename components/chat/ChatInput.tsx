@@ -50,7 +50,6 @@ export default function ChatInput({ onSendMessage, isDisabled = false, isSending
       };
       
       recognition.onerror = (event: any) => {
-        console.error('语音识别错误:', event.error);
         setIsListening(false);
         setIsRecording(false);
         
@@ -132,7 +131,6 @@ export default function ChatInput({ onSendMessage, isDisabled = false, isSending
         recognitionRef.current.start();
         setIsRecording(true);
       } catch (error) {
-        console.error('启动语音识别失败:', error);
         setIsRecording(false);
         setSpeechError('语音识别启动失败，请重试');
         setTimeout(() => setSpeechError(''), 3000);

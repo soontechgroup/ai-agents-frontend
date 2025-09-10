@@ -26,7 +26,6 @@ export class MemoryService {
       
       return response;
     } catch (error) {
-      console.error('Failed to get memory graph:', error);
       throw error;
     }
   }
@@ -58,7 +57,6 @@ export class MemoryService {
       
       return { ...graphResponse, data: [] };
     } catch (error) {
-      console.error('Failed to search memory:', error);
       throw error;
     }
   }
@@ -105,7 +103,6 @@ export class MemoryService {
       
       throw new Error('Memory node not found');
     } catch (error) {
-      console.error('Failed to get memory detail:', error);
       throw error;
     }
   }
@@ -144,7 +141,6 @@ export class MemoryService {
         message: 'success'
       };
     } catch (error) {
-      console.error('Failed to get memory stats:', error);
       throw error;
     }
   }

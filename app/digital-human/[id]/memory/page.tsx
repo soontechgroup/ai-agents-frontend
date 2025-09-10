@@ -108,7 +108,6 @@ export default function MemoryViewerPage() {
         setMemories(recentMemories);
       }
     } catch (error) {
-      console.error('Failed to load memory data:', error);
       // 设置默认空数据
       setStats({
         totalNodes: 0,
@@ -130,7 +129,6 @@ export default function MemoryViewerPage() {
         setMemories(res.data || []);
       }
     } catch (error) {
-      console.error('Failed to search memories:', error);
       setMemories([]);
     }
   };
@@ -143,13 +141,11 @@ export default function MemoryViewerPage() {
         setDetailPanelOpen(true);
       }
     } catch (error) {
-      console.error('Failed to load memory detail:', error);
       // 可以在这里添加错误提示
     }
   };
 
   const handleNodeClick = async (nodeId: string | number) => {
-    console.log('Page - Node clicked with ID:', nodeId);
     // 通过节点ID获取记忆详情
     handleMemoryClick({ id: nodeId.toString() } as MemoryItem);
   };

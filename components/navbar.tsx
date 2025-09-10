@@ -80,7 +80,6 @@ export default function Navbar() {
             <span className="text-[var(--text-secondary)]">欢迎, {user?.username}</span>
             <button
               onClick={() => {
-                console.log('Logout button clicked');
                 logout();
               }}
               className="px-4 py-2 rounded-lg text-[var(--text-primary)] transition-all duration-300"
@@ -154,7 +153,6 @@ export default function Navbar() {
                   <span className="text-[var(--text-secondary)]">{user?.username}</span>
                   <button
                     onClick={() => {
-                      console.log('Mobile logout button clicked');
                       logout();
                     }}
                     className="text-[var(--accent-primary)] hover:underline"

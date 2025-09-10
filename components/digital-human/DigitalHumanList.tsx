@@ -49,7 +49,6 @@ export default function DigitalHumanList({
   useEffect(() => {
     const fetchDigitalHumans = async () => {
       try {
-        console.log('[DigitalHumanList] Fetching digital humans...');
         const response = await digitalHumanService.getDigitalHumans({
           page: 1,
           size: pageSize,
@@ -57,18 +56,13 @@ export default function DigitalHumanList({
         });
 
         // 立即转换数据并只保存需要的字段
-        console.log('[DigitalHumanList] Raw API response:', response);
         if (response.data && Array.isArray(response.data)) {
           const mappedData = response.data.map(mapDigitalHumanData);
-          console.log('[DigitalHumanList] Mapped digital humans:', mappedData);
-          console.log('[DigitalHumanList] Digital human IDs:', mappedData.map(h => h.id));
           setDigitalHumans(mappedData);
         } else {
-          console.error('[DigitalHumanList] Invalid response data:', response);
           setDigitalHumans([]);
         }
       } catch (error) {
-        console.error('[DigitalHumanList] Failed to fetch digital humans:', error);
         setDigitalHumans([]);
       }
     };

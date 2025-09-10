@@ -70,7 +70,7 @@ class DigitalHumanService {
     onComplete?: () => void
   ): Promise<EventSource> {
     const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/digital-humans/train`;
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('token');
     
     // 创建 EventSource 实例用于接收 SSE 流
     const eventSource = new EventSource(url, {
@@ -118,7 +118,7 @@ class DigitalHumanService {
                   const event = JSON.parse(data);
                   onMessage(event);
                 } catch (e) {
-                  console.error('解析事件数据失败:', e);
+                  // 解析失败，忽略该消息
                 }
               }
             }

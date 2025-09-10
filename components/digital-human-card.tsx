@@ -60,8 +60,6 @@ export default function DigitalHumanCard({
 
   // 处理点击事件
   const handleClick = (e: React.MouseEvent) => {
-    console.log('[DigitalHumanCard] Clicked digital human:', { id, name, canAccess, accessLevel });
-    
     if (!canAccess) {
       e.preventDefault();
       showToast({

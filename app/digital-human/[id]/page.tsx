@@ -92,7 +92,6 @@ export default function DigitalHumanChatPage() {
           setDigitalHuman(digitalHumanData);
           setIsLoading(false);
         } else {
-          console.error('[DigitalHumanChat] No valid data found:', digitalHumanData);
           setError('无法加载数字人信息');
           showToast({
             message: '无法加载数字人信息',
@@ -105,8 +104,6 @@ export default function DigitalHumanChatPage() {
           }, 2000);
         }
       } catch (error: any) {
-        console.error('[DigitalHumanChat] Failed to load digital human:', error);
-        
         // 检查组件是否还挂载
         if (!isMounted) {
           return;

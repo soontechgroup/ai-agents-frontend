@@ -58,7 +58,6 @@ class AuthService {
       await httpClient.post(`${this.basePath}/logout`);
     } catch (error) {
       // 即使后端登出失败，也要清除本地存储
-      console.log('Backend logout failed, clearing local storage');
     }
     
     // 清除本地存储

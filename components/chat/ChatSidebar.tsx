@@ -46,7 +46,7 @@ export default function ChatSidebar({
           setConversations(filtered);
         }
       } catch (error) {
-        console.error('加载会话历史失败:', error);
+        // 加载失败，忽略错误
       } finally {
         setIsLoadingHistory(false);
       }

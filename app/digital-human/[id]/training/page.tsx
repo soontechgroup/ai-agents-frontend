@@ -54,7 +54,6 @@ export default function DigitalHumanTrainingPage() {
           timestamp: new Date()
         }]);
       } catch (error) {
-        console.error('加载数字人失败:', error);
         showToast({ message: '加载数字人信息失败', type: 'error' });
         router.push('/');
       } finally {
@@ -181,7 +180,6 @@ export default function DigitalHumanTrainingPage() {
         message,
         handleTrainingEvent,
         (error) => {
-          console.error('训练错误:', error);
           showToast({ message: '训练过程出现错误', type: 'error' });
           setIsTraining(false);
         },
@@ -190,7 +188,6 @@ export default function DigitalHumanTrainingPage() {
         }
       );
     } catch (error) {
-      console.error('发送训练消息失败:', error);
       showToast({ message: '发送消息失败', type: 'error' });
       setIsTraining(false);
     }

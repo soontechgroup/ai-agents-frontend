@@ -150,7 +150,6 @@ export const ForceGraph = forwardRef<any, ForceGraphProps>(({
 
   // 处理节点点击
   const handleNodeClick = useCallback((node: ForceGraphNode) => {
-    console.log('Node clicked:', node.label);
     if (onNodeClick) {
       onNodeClick(node);
     }
@@ -158,7 +157,6 @@ export const ForceGraph = forwardRef<any, ForceGraphProps>(({
 
   // 处理节点右键
   const handleNodeRightClick = useCallback((node: ForceGraphNode, event: MouseEvent) => {
-    console.log('Node right-clicked:', node.label);
     event.preventDefault();
     if (onNodeRightClick) {
       onNodeRightClick(node, event);
@@ -167,7 +165,6 @@ export const ForceGraph = forwardRef<any, ForceGraphProps>(({
 
   // 处理节点悬停
   const handleNodeHover = useCallback((node: ForceGraphNode | null) => {
-    console.log('Node hover:', node?.label || 'none');
     setHoveredNode(node);
     if (onNodeHover) {
       onNodeHover(node);

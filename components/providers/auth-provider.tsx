@@ -47,7 +47,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       expiryDate.setDate(expiryDate.getDate() + 1);
       document.cookie = `token=${token}; path=/; expires=${expiryDate.toUTCString()}; SameSite=Strict`;
     } catch (error) {
-      console.error('Token verification failed:', error);
       localStorage.removeItem('token');
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     } finally {
@@ -92,20 +91,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // 注册
   const register = async (email: string, password: string, full_name?: string) => {
-    console.log('AuthProvider register called with:', { email, full_name });
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      console.log('调用 authService.register...');
       const response = await authService.register({
         email,
         password,
         full_name,
       });
-      
-      console.log('注册API响应:', response);
 
       // 检查响应是否成功
       if (response.code === 200 || response.data) {
@@ -130,14 +125,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         } catch (loginError) {
           // 如果自动登录失败，仍然算注册成功
-          console.error('Auto login failed:', loginError);
           setSuccess('注册成功！请手动登录。');
         }
       } else {
         setError(response.message || '注册失败');
       }
     } catch (error) {
-      console.error('注册异常:', error);
       const apiError = error as ApiError;
       setError(apiError.message || '注册失败');
       throw error;
@@ -149,7 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // 登出
   const logout = useCallback(async () => {
     try {
-      console.log('Logout called in AuthProvider');
       setLoading(true);
       
       // 调用 auth service 的 logout
@@ -159,14 +151,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setSuccess('已成功登出');
       
-      console.log('User cleared, redirecting to login page');
-      
       // 使用 window.location 进行硬跳转，确保所有状态被清除
       setTimeout(() => {
         window.location.href = '/login';
       }, 100);
     } catch (error) {
-      console.error('Logout error:', error);
       setError('登出失败，请重试');
       // 即使出错也要清除本地数据
       localStorage.removeItem('token');

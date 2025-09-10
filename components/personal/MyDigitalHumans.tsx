@@ -57,7 +57,6 @@ export default function MyDigitalHumans({ onDigitalHumansCountChange, onDataChan
         setError(response.message || '获取数字人列表失败');
       }
     } catch (err: any) {
-      console.error('获取数字人列表失败:', err);
       setError(err?.message || '网络错误，请重试');
     } finally {
       setLoading(false);
