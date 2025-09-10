@@ -20,14 +20,35 @@ export default function TrainingChat({
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isInitialLoad = useRef(true);
+  const previousMessageCount = useRef(0);
 
   // 自动滚动到底部
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = (smooth: boolean = true) => {
+    messagesEndRef.current?.scrollIntoView({ 
+      behavior: smooth ? 'smooth' : 'auto' 
+    });
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // 如果是初始加载（历史记录），直接跳到底部（不要动画）
+    if (isInitialLoad.current && messages.length > 0) {
+      isInitialLoad.current = false;
+      previousMessageCount.current = messages.length;
+      // 使用 setTimeout 确保 DOM 更新后再滚动
+      setTimeout(() => {
+        scrollToBottom(false); // false = 不要动画，直接跳到底部
+      }, 0);
+      return;
+    }
+    
+    // 只有新增消息时才滚动（带动画）
+    if (messages.length > previousMessageCount.current && 
+        messages.length - previousMessageCount.current <= 2) {
+      scrollToBottom(true); // true = 平滑滚动
+    }
+    
+    previousMessageCount.current = messages.length;
   }, [messages]);
 
   // 自动调整输入框高度

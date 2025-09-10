@@ -46,13 +46,50 @@ export default function DigitalHumanTrainingPage() {
         const data = await digitalHumanService.getDigitalHuman(numericId);
         setDigitalHuman(data);
         
-        // 添加初始系统消息
-        setMessages([{
-          id: 'system-1',
-          role: 'assistant',
-          content: '训练已开始。请开始与数字人对话，通过纠正和引导来帮助它学习。每个高质量的对话都会提升训练效果。',
-          timestamp: new Date()
-        }]);
+        // 加载训练历史消息
+        try {
+          const historyResponse = await digitalHumanService.getTrainingMessages(numericId, 1, 50);
+          
+          if (historyResponse.code === 200 && historyResponse.data && historyResponse.data.length > 0) {
+            // 转换历史消息格式
+            const historicalMessages: TrainingMessage[] = historyResponse.data.map(msg => ({
+              id: `history-${msg.id}`,
+              role: msg.role as 'user' | 'assistant',
+              content: msg.content,
+              timestamp: new Date(msg.created_at),
+              extractedKnowledge: msg.extracted_knowledge ? {
+                entities: msg.extracted_knowledge.entities || [],
+                relationships: msg.extracted_knowledge.relationships || msg.extracted_knowledge.relations || []
+              } : undefined
+            }));
+            
+            // 添加系统消息
+            const systemMessage: TrainingMessage = {
+              id: 'system-1',
+              role: 'assistant',
+              content: '欢迎回来！您可以继续之前的训练对话。',
+              timestamp: new Date()
+            };
+            
+            setMessages([...historicalMessages, systemMessage]);
+          } else {
+            // 没有历史记录，添加初始系统消息
+            setMessages([{
+              id: 'system-1',
+              role: 'assistant',
+              content: '训练已开始。请开始与数字人对话，通过纠正和引导来帮助它学习。每个高质量的对话都会提升训练效果。',
+              timestamp: new Date()
+            }]);
+          }
+        } catch (historyError) {
+          // 加载历史失败，使用默认消息
+          setMessages([{
+            id: 'system-1',
+            role: 'assistant',
+            content: '训练已开始。请开始与数字人对话，通过纠正和引导来帮助它学习。每个高质量的对话都会提升训练效果。',
+            timestamp: new Date()
+          }]);
+        }
       } catch (error) {
         showToast({ message: '加载数字人信息失败', type: 'error' });
         router.push('/');

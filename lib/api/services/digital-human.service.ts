@@ -7,7 +7,8 @@ import {
   ChatMessage, 
   RecommendedTopic,
   DigitalHumanPageRequest,
-  DigitalHumanPageResponse
+  DigitalHumanPageResponse,
+  TrainingMessagesPageResponse
 } from '@/lib/types/digital-human';
 
 export interface SendMessageData {
@@ -134,6 +135,23 @@ class DigitalHumanService {
     });
     
     return eventSource;
+  }
+
+  // 获取训练消息历史
+  async getTrainingMessages(
+    digitalHumanId: number,
+    page: number = 1,
+    size: number = 20
+  ): Promise<TrainingMessagesPageResponse> {
+    const response = await httpClient.post<TrainingMessagesPageResponse>(
+      '/api/v1/digital-humans/training-messages',
+      {
+        digital_human_id: digitalHumanId,
+        page,
+        size
+      }
+    );
+    return response;
   }
 
 }

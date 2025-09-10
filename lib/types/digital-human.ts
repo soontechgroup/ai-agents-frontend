@@ -154,3 +154,32 @@ export interface TrainingState {
   messages: TrainingMessage[];
   progress: TrainingProgress;
 }
+
+// 训练消息历史相关类型
+export interface TrainingMessagesRequest {
+  digital_human_id: number;
+  page?: number;
+  size?: number;
+}
+
+export interface TrainingMessageFromAPI {
+  id: number;
+  role: string;
+  content: string;
+  extracted_knowledge?: Record<string, any> | null;
+  created_at: string;
+}
+
+export interface PaginationMeta {
+  page: number;
+  size: number;
+  total: number;
+  pages: number;
+}
+
+export interface TrainingMessagesPageResponse {
+  code: number;
+  message: string;
+  data: TrainingMessageFromAPI[];
+  pagination: PaginationMeta;
+}
