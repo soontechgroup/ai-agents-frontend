@@ -242,9 +242,9 @@ export default function DigitalHumanTrainingPage() {
       </header>
 
       {/* 主内容区 */}
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex min-h-0">
         {/* 左侧聊天区域 */}
-        <div className="flex-1 flex flex-col border-r border-gray-700/50">
+        <div className="flex-1 flex flex-col border-r border-gray-700/50 min-h-0 overflow-hidden">
           {/* 训练提示 */}
           <div className="px-6 py-4 bg-purple-500/10 border-b border-gray-700/50">
             <div className="flex items-center gap-2 mb-1">
@@ -266,7 +266,7 @@ export default function DigitalHumanTrainingPage() {
         </div>
         
         {/* 右侧思考过程 */}
-        <aside className="w-96 bg-gray-800/50">
+        <aside className="w-96 bg-gray-800/50 flex flex-col h-full overflow-hidden">
           <ThinkingProcess
             steps={thinkingSteps}
             currentThinking={currentThinking}

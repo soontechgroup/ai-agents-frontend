@@ -41,7 +41,7 @@ export default function ThinkingProcess({
       </div>
       
       {/* 内容区域 */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto px-6 py-4">
         {!isProcessing && steps.length === 0 ? (
           // 等待状态
           <div className="text-center py-12">
@@ -62,7 +62,7 @@ export default function ThinkingProcess({
             <p className="text-gray-600 text-xs mt-1">开始对话后查看思考过程</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 pt-2">
             {/* 当前思考状态 */}
             {isProcessing && currentThinking && (
               <div className="px-4 py-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
