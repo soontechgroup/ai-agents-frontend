@@ -69,17 +69,11 @@ class DigitalHumanService {
     onMessage: (event: any) => void,
     onError?: (error: Error) => void,
     onComplete?: () => void
-  ): Promise<EventSource> {
+  ): Promise<void> {
     const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/digital-humans/train`;
     const token = localStorage.getItem('token');
     
-    // 创建 EventSource 实例用于接收 SSE 流
-    const eventSource = new EventSource(url, {
-      // EventSource 不支持直接设置 headers，需要通过其他方式传递 token
-      // 这里我们使用 POST 请求的替代方案
-    } as any);
-    
-    // 由于浏览器的 EventSource 不支持 POST 请求，我们需要使用 fetch API
+    // 使用 fetch API 发送 POST 请求处理 SSE 流
     fetch(url, {
       method: 'POST',
       headers: {
@@ -133,8 +127,6 @@ class DigitalHumanService {
     }).catch(error => {
       onError?.(error);
     });
-    
-    return eventSource;
   }
 
   // 获取训练消息历史

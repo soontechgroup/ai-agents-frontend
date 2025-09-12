@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Brain, MessageSquare, Sparkles, Activity } from 'lucide-react';
 import { DigitalHuman, TrainingMessage, TrainingEvent, ThinkingStep, TrainingProgress } from '@/lib/types/digital-human';
@@ -28,7 +28,7 @@ export default function DigitalHumanTrainingPage() {
     progressPercentage: 0
   });
   
-  const eventSourceRef = useRef<EventSource | null>(null);
+  // 移除 eventSourceRef，因为不再需要
   const id = params.id as string;
   const numericId = parseInt(id);
 
@@ -62,6 +62,10 @@ export default function DigitalHumanTrainingPage() {
                 relationships: msg.extracted_knowledge.relationships || msg.extracted_knowledge.relations || []
               } : undefined
             }));
+            
+            // 反转数组顺序，因为后端返回的是倒序（最新的在前）
+            // 但聊天界面需要正序（最早的在前）
+            historicalMessages.reverse();
             
             // 添加系统消息
             const systemMessage: TrainingMessage = {
@@ -101,14 +105,7 @@ export default function DigitalHumanTrainingPage() {
     loadDigitalHuman();
   }, [id, numericId, router, showToast]);
 
-  // 清理事件源
-  useEffect(() => {
-    return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
-    };
-  }, []);
+  // 不再需要清理事件源，因为使用的是普通的 fetch
 
   // 处理训练事件
   const handleTrainingEvent = (event: TrainingEvent) => {
