@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
 import { ForceGraphWrapper as ForceGraph } from '@/components/digital-human/memory/ForceGraphWrapper';
 import { 
   KnowledgeGraphData, 
@@ -21,12 +21,47 @@ interface KnowledgeGraphProps {
   onNodeClick: (nodeId: string | number) => void;
 }
 
-export function KnowledgeGraph({ data, onNodeClick }: KnowledgeGraphProps) {
+export interface KnowledgeGraphHandle {
+  zoomIn: () => void;
+  zoomOut: () => void;
+  zoomToFit: () => void;
+  centerAt: (x: number, y: number) => void;
+}
+
+export const KnowledgeGraph = forwardRef<KnowledgeGraphHandle, KnowledgeGraphProps>(({ data, onNodeClick }, ref) => {
   const [forceGraphData, setForceGraphData] = useState<ForceGraphData>({ nodes: [], links: [] });
   const [selectedNode, setSelectedNode] = useState<string | number | null>(null);
   const [highlightNodes, setHighlightNodes] = useState<Set<string | number>>(new Set());
   const [highlightLinks, setHighlightLinks] = useState<Set<string>>(new Set());
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; node: ForceGraphNode } | null>(null);
+  const graphRef = useRef<any>(null);
+  
+  // 暴露控制方法
+  useImperativeHandle(ref, () => ({
+    zoomIn: () => {
+      if (graphRef.current) {
+        const currentZoom = graphRef.current.zoom ? graphRef.current.zoom() : 1;
+        graphRef.current.zoom(currentZoom * 1.2);
+      }
+    },
+    zoomOut: () => {
+      if (graphRef.current) {
+        const currentZoom = graphRef.current.zoom ? graphRef.current.zoom() : 1;
+        graphRef.current.zoom(currentZoom * 0.8);
+      }
+    },
+    zoomToFit: () => {
+      if (graphRef.current && graphRef.current.zoomToFit) {
+        graphRef.current.zoomToFit(400, 50);
+      }
+    },
+    centerAt: (x: number, y: number) => {
+      if (graphRef.current && graphRef.current.centerAt) {
+        graphRef.current.centerAt(x, y, 1000);
+      }
+    }
+  }), []);
+  
   // 转换数据格式
   useEffect(() => {
     if (data) {
@@ -125,6 +160,7 @@ export function KnowledgeGraph({ data, onNodeClick }: KnowledgeGraphProps) {
     <div className="relative w-full h-full">
       {/* 主图 */}
       <ForceGraph
+        ref={graphRef}
         data={forceGraphData}
         onNodeClick={handleNodeClick}
         onNodeRightClick={handleNodeRightClick}
@@ -134,50 +170,6 @@ export function KnowledgeGraph({ data, onNodeClick }: KnowledgeGraphProps) {
         highlightLinks={highlightLinks}
       />
 
-      {/* 选中节点信息栏 */}
-      {selectedNode && (
-        <div className="absolute top-4 right-4 bg-gray-900/90 backdrop-blur-md border border-gray-700 rounded-lg p-4 max-w-xs">
-          <div className="flex justify-between items-start mb-3">
-            <h3 className="text-sm font-medium text-white">节点信息</h3>
-            <button
-              onClick={clearSelection}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          {(() => {
-            const node = forceGraphData.nodes.find(n => n.id === selectedNode);
-            if (!node) return null;
-            return (
-              <div className="space-y-2">
-                <div>
-                  <span className="text-xs text-gray-500">标签</span>
-                  <p className="text-sm text-white">{node.label}</p>
-                </div>
-                {node.type && (
-                  <div>
-                    <span className="text-xs text-gray-500">类型</span>
-                    <p className="text-sm text-white">{node.type}</p>
-                  </div>
-                )}
-                {node.description && (
-                  <div>
-                    <span className="text-xs text-gray-500">描述</span>
-                    <p className="text-sm text-gray-300">{node.description}</p>
-                  </div>
-                )}
-                <div>
-                  <span className="text-xs text-gray-500">连接数</span>
-                  <p className="text-sm text-white">{highlightNodes.size - 1}</p>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      )}
 
       {/* 右键菜单 */}
       {contextMenu && (
@@ -214,4 +206,4 @@ export function KnowledgeGraph({ data, onNodeClick }: KnowledgeGraphProps) {
       )}
     </div>
   );
-}
+});

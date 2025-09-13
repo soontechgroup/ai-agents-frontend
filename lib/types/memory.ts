@@ -6,6 +6,17 @@ export interface MemoryStats {
   vectorCoverage: number;  // 向量覆盖率（百分比）
 }
 
+// 记忆统计响应（与后端保持一致）
+export interface MemoryStatsResponse {
+  total_nodes: number;
+  total_edges: number;
+  node_categories: Record<string, number>;
+  edge_types: Record<string, number>;
+  network_density: number;
+  avg_connections_per_node: number;
+  timeline?: Array<Record<string, any>>;
+}
+
 // 记忆图谱节点（与后端保持一致）
 export interface MemoryGraphNode {
   id: string;
@@ -151,6 +162,73 @@ export interface MemoryGraphRequest {
   digitalHumanId: string;
   limit?: number;
   nodeTypes?: string[];
+}
+
+// 记忆搜索请求
+export interface MemorySearchRequest {
+  digitalHumanId: string;
+  query: string;
+  nodeTypes?: string[];
+  limit?: number;
+}
+
+// 记忆搜索响应
+export interface MemorySearchResponse {
+  results: MemoryGraphNode[];
+  total: number;
+}
+
+// 记忆详情请求
+export interface MemoryDetailRequest {
+  digitalHumanId: string;
+  nodeId: string;
+  includeRelations?: boolean;
+  relationDepth?: number;
+}
+
+// 记忆详情响应
+export interface MemoryDetailResponse {
+  node: MemoryGraphNode;
+  relations: Array<{
+    source: string;
+    target: string;
+    type: string;
+    properties?: Record<string, any>;
+  }>;
+  connected_nodes: MemoryGraphNode[];
+}
+
+// 记忆统计请求
+export interface MemoryStatsRequest {
+  digitalHumanId: string;
+  includeTimeline?: boolean;
+}
+
+// 训练消息
+export interface TrainingMessage {
+  id: number;
+  role: 'user' | 'assistant';
+  content: string;
+  extracted_knowledge?: Record<string, any>;
+  created_at: string;
+}
+
+// 训练消息请求
+export interface TrainingMessagesRequest {
+  digitalHumanId: string;
+  page?: number;
+  size?: number;
+}
+
+// 训练消息分页响应
+export interface TrainingMessagesPageResponse {
+  data: TrainingMessage[];
+  pagination: {
+    page: number;
+    size: number;
+    total: number;
+    pages: number;
+  };
 }
 
 // 根据置信度获取节点颜色

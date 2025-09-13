@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import dynamic from 'next/dynamic';
 import { ForceGraphData, ForceGraphNode } from '@/lib/types/memory';
 
@@ -43,6 +44,6 @@ interface ForceGraphWrapperProps {
   height?: number;
 }
 
-export function ForceGraphWrapper(props: ForceGraphWrapperProps) {
-  return <ForceGraph {...props} />;
-}
+export const ForceGraphWrapper = forwardRef<any, ForceGraphWrapperProps>((props, ref) => {
+  return <ForceGraph ref={ref} {...props} />;
+});

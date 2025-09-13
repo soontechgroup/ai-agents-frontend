@@ -24,10 +24,10 @@ export function convertToForceGraphData(data: KnowledgeGraphData): ForceGraphDat
     value: node.size  // 用于力导向图的节点权重
   }));
 
-  // 转换边
+  // 转换边（兼容 from/to 和 source/target 两种格式）
   const links: ForceGraphLink[] = data.edges.map(edge => ({
-    source: edge.from,
-    target: edge.to,
+    source: (edge as any).source || edge.from,
+    target: (edge as any).target || edge.to,
     label: edge.label,
     value: edge.weight || 1,
     distance: 100,  // 默认边长度

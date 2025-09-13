@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Brain, MessageSquare, Sparkles, Activity } from 'lucide-react';
-import { DigitalHuman, TrainingMessage, TrainingEvent, ThinkingStep, TrainingProgress } from '@/lib/types/digital-human';
+import { DigitalHuman, TrainingMessage, TrainingEvent, ThinkingStep, TrainingProgress, TrainingMessageFromAPI } from '@/lib/types/digital-human';
 import { digitalHumanService } from '@/lib/api/services/digital-human.service';
 import { useToast } from '@/lib/hooks/useToast';
 import TrainingChat from './components/TrainingChat';
@@ -52,7 +52,7 @@ export default function DigitalHumanTrainingPage() {
           
           if (historyResponse.code === 200 && historyResponse.data && historyResponse.data.length > 0) {
             // 转换历史消息格式
-            const historicalMessages: TrainingMessage[] = historyResponse.data.map(msg => ({
+            const historicalMessages: TrainingMessage[] = historyResponse.data.map((msg: TrainingMessageFromAPI) => ({
               id: `history-${msg.id}`,
               role: msg.role as 'user' | 'assistant',
               content: msg.content,
