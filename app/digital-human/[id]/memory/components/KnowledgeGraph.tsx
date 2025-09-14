@@ -16,8 +16,6 @@ import {
 
 interface KnowledgeGraphProps {
   data: KnowledgeGraphData;
-  scale?: number;
-  offset?: { x: number; y: number };
   onNodeClick: (nodeId: string | number) => void;
 }
 
@@ -36,31 +34,8 @@ export const KnowledgeGraph = forwardRef<KnowledgeGraphHandle, KnowledgeGraphPro
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; node: ForceGraphNode } | null>(null);
   const graphRef = useRef<any>(null);
   
-  // 暴露控制方法
-  useImperativeHandle(ref, () => ({
-    zoomIn: () => {
-      if (graphRef.current) {
-        const currentZoom = graphRef.current.zoom ? graphRef.current.zoom() : 1;
-        graphRef.current.zoom(currentZoom * 1.2);
-      }
-    },
-    zoomOut: () => {
-      if (graphRef.current) {
-        const currentZoom = graphRef.current.zoom ? graphRef.current.zoom() : 1;
-        graphRef.current.zoom(currentZoom * 0.8);
-      }
-    },
-    zoomToFit: () => {
-      if (graphRef.current && graphRef.current.zoomToFit) {
-        graphRef.current.zoomToFit(400, 50);
-      }
-    },
-    centerAt: (x: number, y: number) => {
-      if (graphRef.current && graphRef.current.centerAt) {
-        graphRef.current.centerAt(x, y, 1000);
-      }
-    }
-  }), []);
+  // 暴露控制方法 - 直接转发给内部的 ForceGraph
+  useImperativeHandle(ref, () => graphRef.current, []);
   
   // 转换数据格式
   useEffect(() => {

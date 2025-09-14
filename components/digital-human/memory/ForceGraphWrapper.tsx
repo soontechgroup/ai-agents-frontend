@@ -47,3 +47,5 @@ interface ForceGraphWrapperProps {
 export const ForceGraphWrapper = forwardRef<any, ForceGraphWrapperProps>((props, ref) => {
   return <ForceGraph ref={ref} {...props} />;
 });
+
+ForceGraphWrapper.displayName = 'ForceGraphWrapper';

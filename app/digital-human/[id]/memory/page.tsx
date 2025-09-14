@@ -9,7 +9,6 @@ import { RecentMemories } from './components/RecentMemories';
 import { KnowledgeGraph, KnowledgeGraphHandle } from './components/KnowledgeGraph';
 import { GraphControls } from './components/GraphControls';
 import { MemoryDetail } from './components/MemoryDetail';
-import { TrainingHistory } from './components/TrainingHistory';
 import { memoryService } from '@/lib/api/services/memory.service';
 import {
   MemoryStats as MemoryStatsType,
@@ -34,9 +33,6 @@ export default function MemoryViewerPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [detailPanelOpen, setDetailPanelOpen] = useState(false);
-  const [trainingHistoryOpen, setTrainingHistoryOpen] = useState(false);
-  const [graphScale, setGraphScale] = useState(1);
-  const [graphOffset, setGraphOffset] = useState({ x: 0, y: 0 });
   const [selectedNodeTypes, setSelectedNodeTypes] = useState<string[]>([]);
 
   // 加载初始数据
@@ -46,17 +42,14 @@ export default function MemoryViewerPage() {
 
   // 处理搜索变化
   useEffect(() => {
-    if (!loading && searchQuery) {
-      loadSearchResults();
-    } else if (!loading && !searchQuery && memoryGraphData) {
-      // 恢复显示所有记忆
-      const allMemories = memoryGraphData.nodes.slice(0, 10).map(node => ({
-        id: node.id,
-        content: node.properties?.description || node.label,
-        timestamp: node.updated_at || new Date().toISOString(),
-        preview: node.label
-      }));
-      setMemories(allMemories);
+    if (!loading) {
+      if (searchQuery) {
+        // 执行搜索
+        loadSearchResults();
+      } else {
+        // 搜索词为空时，重新加载原始数据
+        loadInitialMemories();
+      }
     }
   }, [searchQuery]);
 
@@ -137,6 +130,35 @@ export default function MemoryViewerPage() {
       setGraphData({ nodes: [], edges: [] });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadInitialMemories = async () => {
+    // 如果已经有图谱数据，直接使用
+    if (memoryGraphData) {
+      const allMemories = memoryGraphData.nodes.slice(0, 10).map(node => ({
+        id: node.id,
+        content: node.properties?.description || node.label,
+        timestamp: node.updated_at || new Date().toISOString(),
+        preview: node.label
+      }));
+      setMemories(allMemories);
+    } else {
+      // 重新加载数据
+      try {
+        const res = await memoryService.getMemoryGraph(digitalHumanId, 100);
+        if ((res.code === 0 || res.code === 200) && res.data) {
+          const allMemories = res.data.nodes.slice(0, 10).map(node => ({
+            id: node.id,
+            content: node.properties?.description || node.label,
+            timestamp: node.updated_at || new Date().toISOString(),
+            preview: node.label
+          }));
+          setMemories(allMemories);
+        }
+      } catch (error) {
+        console.error('Failed to load initial memories:', error);
+      }
     }
   };
 
@@ -250,15 +272,6 @@ export default function MemoryViewerPage() {
           </div>
           <h1 className="text-lg font-semibold">数字人记忆体 - 知识图谱</h1>
         </div>
-        <button
-          onClick={() => setTrainingHistoryOpen(true)}
-          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-sm text-gray-300 rounded-lg transition-colors flex items-center gap-2"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          训练历史
-        </button>
       </motion.header>
 
       {/* 主内容区 */}
@@ -293,8 +306,6 @@ export default function MemoryViewerPage() {
               <KnowledgeGraph
                 ref={graphRef}
                 data={graphData}
-                scale={graphScale}
-                offset={graphOffset}
                 onNodeClick={handleNodeClick}
               />
               <GraphControls
@@ -318,53 +329,6 @@ export default function MemoryViewerPage() {
             </div>
           )}
 
-          {/* 图例说明 */}
-          {graphData && graphData.nodes.length > 0 && (
-            <motion.div 
-              className="absolute bottom-4 left-4 bg-gray-900/90 backdrop-blur-md border border-gray-800 rounded-lg p-4 min-w-[200px]"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-            >
-              <div className="text-xs text-gray-500 uppercase tracking-wider mb-3">置信度图例</div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#00F5A0' }} />
-                  <span>高置信度 (80%+)</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#00D9FF' }} />
-                  <span>中高置信度 (60-80%)</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#F7B731' }} />
-                  <span>中置信度 (40-60%)</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#FF6B6B' }} />
-                  <span>低置信度 (20-40%)</span>
-                </div>
-              </div>
-              {memoryGraphData && (
-                <div className="mt-3 pt-3 border-t border-gray-700 text-xs text-gray-400">
-                  <div>总节点: {memoryGraphData.statistics.total_nodes}</div>
-                  <div>显示节点: {memoryGraphData.statistics.displayed_nodes}</div>
-                  <div>总关系: {memoryGraphData.statistics.total_edges}</div>
-                  {memoryGraphData.statistics.categories && Object.keys(memoryGraphData.statistics.categories).length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      <div className="text-gray-500">节点类型:</div>
-                      {Object.entries(memoryGraphData.statistics.categories).map(([type, count]) => (
-                        <div key={type} className="flex justify-between">
-                          <span>{type}:</span>
-                          <span>{count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </motion.div>
-          )}
 
           {/* 加载动画 */}
           <AnimatePresence>
@@ -438,12 +402,6 @@ export default function MemoryViewerPage() {
           onClose={() => setDetailPanelOpen(false)}
         />
         
-        {/* 训练历史弹窗 */}
-        <TrainingHistory
-          digitalHumanId={digitalHumanId}
-          isOpen={trainingHistoryOpen}
-          onClose={() => setTrainingHistoryOpen(false)}
-        />
       </div>
     </motion.div>
   );

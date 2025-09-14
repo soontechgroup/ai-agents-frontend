@@ -93,7 +93,7 @@ export const ForceGraph = forwardRef<any, ForceGraphProps>(({
   const nodeCanvasObject = useCallback((node: ForceGraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
     const label = node.label || node.id.toString();
     const fontSize = 12 / globalScale;
-    const nodeSize = node.size || 5;
+    const nodeSize = Math.max(1, node.size || 5); // 确保节点大小至少为1
     const interactionRadius = nodeSize + 10; // 增大交互区域
     
     // 获取动画进度
@@ -101,9 +101,9 @@ export const ForceGraph = forwardRef<any, ForceGraphProps>(({
     const animProgress = Math.min(1, (Date.now() - animDelay) / 500);
     
     if (animProgress < 1 && !animationFrameRef.current) {
-      // 使用 requestAnimationFrame 替代 setTimeout
+      // 使用 requestAnimationFrame 触发重绘
       animationFrameRef.current = requestAnimationFrame(() => {
-        if (fgRef.current) fgRef.current.refresh();
+        // ForceGraph2D 没有 refresh 方法，移除这个调用
         animationFrameRef.current = null;
       });
     }
@@ -150,7 +150,7 @@ export const ForceGraph = forwardRef<any, ForceGraphProps>(({
     ctx.save();
     ctx.globalAlpha = animProgress;
     const scaleAnimation = 0.5 + animProgress * 0.5;
-    const actualNodeRadius = nodeSize * scaleAnimation; // 实际渲染半径
+    const actualNodeRadius = Math.max(0.1, nodeSize * scaleAnimation); // 实际渲染半径，确保不为负数
     ctx.beginPath();
     ctx.arc(node.x!, node.y!, actualNodeRadius, 0, 2 * Math.PI);
     ctx.fillStyle = node.color || '#00D9FF';

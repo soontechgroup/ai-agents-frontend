@@ -58,7 +58,7 @@ export function RecentMemories({ memories, onMemoryClick }: RecentMemoriesProps)
   }
 
   return (
-    <div className="flex-1 overflow-y-auto space-y-3">
+    <div className="flex-1 overflow-y-auto space-y-2">
       <AnimatePresence mode="popLayout">
         {memories.map((memory, index) => (
           <motion.div
@@ -73,27 +73,22 @@ export function RecentMemories({ memories, onMemoryClick }: RecentMemoriesProps)
               type: "spring",
               stiffness: 100
             }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
             onClick={() => onMemoryClick(memory)}
-            className="bg-gray-800 border border-gray-700 rounded-lg p-3.5 cursor-pointer hover:bg-gray-750 hover:border-gray-600 transition-all group"
+            className="bg-gray-800 border border-gray-700 rounded-lg p-2.5 cursor-pointer hover:bg-gray-750 hover:border-gray-600 transition-all group"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h4 className="text-sm font-medium text-white group-hover:text-cyan-400 transition-colors line-clamp-1">
                   {memory.preview || memory.content}
                 </h4>
-                <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+                <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">
                   {memory.content}
                 </p>
               </div>
-            </div>
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-xs text-gray-500">
-                {formatRelativeTime(memory.timestamp)}
-              </span>
               <motion.svg 
-                className="w-4 h-4 text-gray-600 group-hover:text-cyan-400 transition-colors" 
+                className="w-3 h-3 text-gray-600 group-hover:text-cyan-400 transition-colors mt-1 flex-shrink-0 ml-2" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
