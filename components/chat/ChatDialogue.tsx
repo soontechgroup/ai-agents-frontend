@@ -3,13 +3,16 @@
 import { useEffect, useRef } from 'react';
 import ChatMessage from './ChatMessage';
 import ThinkingBubble from './ThinkingBubble';
-import { ChatMessage as ChatMessageType } from '@/lib/types/digital-human';
+import MemoryCard from './MemoryCard';
+import ThinkingCard from './ThinkingCard';
+import KnowledgeCard from './KnowledgeCard';
+import { Message } from '@/lib/types/conversation';
 
 interface ChatDialogueProps {
-  messages: ChatMessageType[];
+  messages: Message[];
   isThinking: boolean;
   digitalHumanAvatar?: string;
-  streamingMessageId?: string; // 正在流式更新的消息ID
+  streamingMessageId?: string | number; // 正在流式更新的消息ID
 }
 
 export default function ChatDialogue({ messages, isThinking, digitalHumanAvatar, streamingMessageId }: ChatDialogueProps) {
@@ -30,19 +33,59 @@ export default function ChatDialogue({ messages, isThinking, digitalHumanAvatar,
       >
         {messages.map((message, index) => {
           const isLastMessage = index === messages.length - 1;
-          const isStreaming = isThinking && isLastMessage && message.type === 'ai' && message.content !== '';
-          
+          const isStreaming = isThinking && isLastMessage && message.role === 'assistant' && message.content !== '';
+
+          // 根据消息类型或metadata中的messageType渲染不同组件
+          const messageType = message.type || message.metadata?.messageType || 'text';
+
+          // 检查是否有特殊类型内容
+          let specialContent = null;
+          if (messageType === 'memory') {
+            specialContent = (
+              <MemoryCard
+                content={message.content}
+                metadata={message.metadata}
+                timestamp={message.created_at}
+              />
+            );
+          } else if (messageType === 'thinking') {
+            specialContent = (
+              <ThinkingCard
+                content={message.content}
+                metadata={message.metadata}
+                timestamp={message.created_at}
+              />
+            );
+          } else if (messageType === 'knowledge') {
+            specialContent = (
+              <KnowledgeCard
+                content={message.content}
+                metadata={message.metadata}
+                timestamp={message.created_at}
+              />
+            );
+          }
+
+          // 转换Message到ChatMessage格式
+          const chatMessage = {
+            id: String(message.id),
+            type: message.role === 'user' ? 'user' as const : 'ai' as const,
+            content: message.content,
+            timestamp: message.created_at ? new Date(message.created_at) : new Date(),
+            specialContent
+          };
+
           return (
-            <ChatMessage 
-              key={message.id} 
-              message={message} 
+            <ChatMessage
+              key={message.id}
+              message={chatMessage}
               digitalHumanAvatar={digitalHumanAvatar}
               isStreaming={isStreaming}
             />
           );
         })}
         
-        {isThinking && messages.length > 0 && messages[messages.length - 1].type === 'user' && (
+        {isThinking && messages.length > 0 && messages[messages.length - 1].role === 'user' && (
           <ThinkingBubble digitalHumanAvatar={digitalHumanAvatar} />
         )}
       </div>

@@ -109,7 +109,7 @@ export function parseSSEData(data: string): ParsedSSEData {
 
   try {
     const parsed = JSON.parse(data);
-    
+
     // 检查是否是错误响应
     if (parsed.error) {
       return {
@@ -118,7 +118,75 @@ export function parseSSEData(data: string): ParsedSSEData {
       };
     }
 
-    // 提取消息内容
+    // 处理新格式的消息
+    if (parsed.type === 'done') {
+      return { type: 'done', metadata: parsed.metadata };
+    }
+
+    // 检查是否是记忆类型消息（可能在根级别）
+    if (parsed.type === 'memory' || parsed.message_type === 'memory') {
+      return {
+        type: 'message',
+        content: parsed.content || '',
+        metadata: {
+          messageType: 'memory',
+          originalData: parsed,
+          entities: parsed.entities || parsed.memories || parsed.data,
+          count: parsed.count || (parsed.entities ? parsed.entities.length : 0)
+        }
+      };
+    }
+
+    if (parsed.type === 'message') {
+      // 用户消息确认，可以忽略
+      return { type: 'heartbeat', metadata: parsed.metadata };
+    }
+
+    if (parsed.type === 'token') {
+
+      // 检查是否是特殊类型的消息
+      if (typeof parsed.content === 'string') {
+        try {
+          const contentData = JSON.parse(parsed.content);
+          if (contentData.type && ['memory', 'thinking', 'knowledge'].includes(contentData.type)) {
+            // 返回特殊类型的消息，保留原始数据
+            return {
+              type: 'message',
+              content: contentData.content || parsed.content,
+              metadata: {
+                ...parsed.metadata,
+                messageType: contentData.type,
+                originalData: contentData
+              }
+            };
+          }
+        } catch (e) {
+          // 不是JSON格式，检查metadata
+        }
+      }
+
+      // 检查metadata中是否已经有类型信息
+      if (parsed.metadata?.type && ['memory', 'thinking', 'knowledge'].includes(parsed.metadata.type)) {
+        return {
+          type: 'message',
+          content: parsed.content,
+          metadata: {
+            ...parsed.metadata,
+            messageType: parsed.metadata.type,
+            originalData: parsed.metadata
+          }
+        };
+      }
+
+      // 返回普通token内容
+      return {
+        type: 'message',
+        content: parsed.content,
+        metadata: parsed.metadata
+      };
+    }
+
+    // 兼容旧格式（如果没有type字段）
     if (parsed.content !== undefined) {
       return {
         type: 'message',

@@ -12,9 +12,11 @@ interface DigitalHumanCardData {
   id: string;
   name: string;
   description: string;
-  status: 'online' | 'offline';
+  is_active?: boolean;
   chats: number;
   likes: number;
+  type?: string;
+  skills?: string[];
   imageUrl?: string;
   canAccess: boolean;
   accessLevel: 'view' | 'chat' | 'edit' | 'owner';
@@ -86,9 +88,11 @@ export default function DigitalHumanList({
       id: id, // 确保 ID 总是字符串类型
       name: human.name,
       description: human.short_description || human.detailed_description || '暂无描述',
-      status: human.status || 'online' as const,
+      is_active: human.is_active,
       chats: human.chats || 0,
       likes: human.likes || 0,
+      type: human.type,
+      skills: human.skills,
       imageUrl: human.imageUrl || human.avatar,
       // 权限相关字段
       canAccess: human.canAccess ?? canAccess,
@@ -152,9 +156,11 @@ export default function DigitalHumanList({
                   id={human.id}
                   name={human.name}
                   description={human.description}
-                  status={human.status}
+                  is_active={human.is_active}
                   chats={human.chats}
                   likes={human.likes}
+                  type={human.type}
+                  skills={human.skills}
                   imageUrl={human.imageUrl}
                   canAccess={human.canAccess}
                   accessLevel={human.accessLevel}

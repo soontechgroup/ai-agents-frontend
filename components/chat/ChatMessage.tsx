@@ -1,10 +1,15 @@
 'use client';
 
+import { ReactNode } from 'react';
 import { ChatMessage as ChatMessageType } from '@/lib/types/digital-human';
 import StreamingMessage from './StreamingMessage';
 
+interface ExtendedChatMessage extends ChatMessageType {
+  specialContent?: ReactNode;
+}
+
 interface ChatMessageProps {
-  message: ChatMessageType;
+  message: ExtendedChatMessage;
   digitalHumanAvatar?: string;
   isStreaming?: boolean;
 }
@@ -30,26 +35,38 @@ export default function ChatMessage({ message, digitalHumanAvatar = '🎤', isSt
       </div>
 
       {/* 消息气泡 */}
-      <div 
+      <div
         className={`max-w-[75%] px-6 py-4 rounded-2xl border ${
           isUser
             ? 'bg-[rgba(0,217,255,0.1)] border-[var(--accent-primary)]'
             : 'bg-[var(--bg-tertiary)] border-[var(--border-default)]'
         }`}
       >
-        <div className={`leading-relaxed ${
-          isUser ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'
-        }`}>
-          {!isUser && isStreaming ? (
-            <StreamingMessage 
-              content={message.content} 
-              isStreaming={true}
-              speed={10}
-            />
-          ) : (
-            <p className="whitespace-pre-line">{message.content}</p>
-          )}
-        </div>
+        {/* 特殊内容（如记忆卡片） */}
+        {message.specialContent && (
+          <div className="mb-3">
+            {message.specialContent}
+          </div>
+        )}
+
+        {/* 普通消息内容 */}
+        {message.content && (
+          <div className={`leading-relaxed ${
+            isUser ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'
+          }`}>
+            {!isUser && isStreaming ? (
+              <StreamingMessage
+                content={message.content}
+                isStreaming={true}
+                speed={10}
+              />
+            ) : (
+              <p className="whitespace-pre-line">{message.content}</p>
+            )}
+          </div>
+        )}
+
+        {/* 时间显示 */}
         <div className="text-xs text-[var(--text-muted)] mt-2">
           {time}
         </div>

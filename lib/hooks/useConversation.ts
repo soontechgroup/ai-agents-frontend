@@ -53,7 +53,7 @@ export function useConversation({
       };
       
       const response = await conversationService.createConversation(data);
-      
+
       if (response.data) {
         setConversation(response.data);
         setMessages([]);
@@ -70,14 +70,14 @@ export function useConversation({
 
   // 加载会话消息历史
   const loadMessages = useCallback(async () => {
-    if (!conversation?.id) return;
-    
+    if (!digitalHumanId) return;
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const response = await conversationService.getConversationMessages({
-        conversation_id: conversation.id,
+        digital_human_id: digitalHumanId,
         limit: 100
       });
       
@@ -90,11 +90,11 @@ export function useConversation({
     } finally {
       setIsLoading(false);
     }
-  }, [conversation?.id]);
+  }, [digitalHumanId]);
 
   // 发送消息并处理流式响应
   const sendMessage = useCallback(async (content: string) => {
-    if (!conversation?.id || !content.trim() || currentStreamRef.current) {
+    if (!digitalHumanId || !content.trim() || currentStreamRef.current) {
       return;
     }
 
@@ -110,7 +110,7 @@ export function useConversation({
     // 添加用户消息到列表
     const userMessage: Message = {
       id: Date.now(),
-      conversation_id: conversation.id,
+      digital_human_id: digitalHumanId,
       role: 'user',
       content: content,
       created_at: new Date().toISOString()
@@ -126,7 +126,7 @@ export function useConversation({
 
     try {
       const data: ConversationChatRequest = {
-        conversation_id: conversation.id,
+        digital_human_id: digitalHumanId,
         message: content,
         stream: true
       };
@@ -173,7 +173,7 @@ export function useConversation({
 
           // 使用SSE处理器解析数据
           const parsedMessages = processor.processChunk(value);
-          
+
           for (const parsed of parsedMessages) {
             if (parsed.type === 'done') {
               // 流结束
@@ -181,28 +181,61 @@ export function useConversation({
             } else if (parsed.type === 'error') {
               // 处理错误
               throw new Error(parsed.error || '流式响应错误');
-            } else if (parsed.type === 'message' && parsed.content) {
-              // 累积内容
-              accumulatedContent += parsed.content;
-              
-              // 如果还没有创建AI消息，现在创建
-              if (!aiMessageCreated) {
-                const aiMessage: Message = {
-                  id: aiMessageId,
-                  conversation_id: conversation.id,
-                  role: 'assistant',
-                  content: accumulatedContent,
-                  created_at: new Date().toISOString()
-                };
-                setMessages(prev => [...prev, aiMessage]);
-                aiMessageCreated = true;
-              } else {
-                // 更新已存在的AI消息内容
-                setMessages(prev => prev.map(msg => 
-                  msg.id === aiMessageId 
-                    ? { ...msg, content: accumulatedContent }
-                    : msg
-                ));
+            } else if (parsed.type === 'message') {
+              // 检查是否是特殊类型的消息
+              const messageType = parsed.metadata?.messageType;
+
+              if (messageType && ['memory', 'thinking', 'knowledge'].includes(messageType)) {
+                // 特殊类型的消息，更新现有消息的metadata
+                if (!aiMessageCreated) {
+                  // 如果还没有创建AI消息，创建一个包含特殊类型的消息
+                  const aiMessage: Message = {
+                    id: aiMessageId,
+                    digital_human_id: digitalHumanId,
+                    role: 'assistant',
+                    content: '', // 内容稍后会填充
+                    type: messageType as 'memory' | 'thinking' | 'knowledge',
+                    metadata: parsed.metadata,
+                    created_at: new Date().toISOString()
+                  };
+                  setMessages(prev => [...prev, aiMessage]);
+                  aiMessageCreated = true;
+                } else {
+                  // 如果消息已存在，更新其类型和metadata
+                  setMessages(prev => prev.map(msg =>
+                    msg.id === aiMessageId
+                      ? {
+                          ...msg,
+                          type: messageType as 'memory' | 'thinking' | 'knowledge',
+                          metadata: { ...msg.metadata, ...parsed.metadata }
+                        }
+                      : msg
+                  ));
+                }
+              } else if (parsed.content) {
+                // 普通文本消息，累积内容
+                accumulatedContent += parsed.content;
+
+                // 如果还没有创建AI消息，现在创建
+                if (!aiMessageCreated) {
+                  const aiMessage: Message = {
+                    id: aiMessageId,
+                    digital_human_id: digitalHumanId,
+                    role: 'assistant',
+                    content: accumulatedContent,
+                    type: 'text',
+                    created_at: new Date().toISOString()
+                  };
+                  setMessages(prev => [...prev, aiMessage]);
+                  aiMessageCreated = true;
+                } else {
+                  // 更新已存在的AI消息内容
+                  setMessages(prev => prev.map(msg =>
+                    msg.id === aiMessageId
+                      ? { ...msg, content: accumulatedContent }
+                      : msg
+                  ));
+                }
               }
             }
           }
@@ -225,7 +258,7 @@ export function useConversation({
         
         const errorMsg: Message = {
           id: aiMessageId,
-          conversation_id: conversation?.id || 0,
+          digital_human_id: digitalHumanId,
           role: 'assistant',
           content: errorContent,
           created_at: new Date().toISOString()
@@ -236,7 +269,7 @@ export function useConversation({
       setIsThinking(false);
       currentStreamRef.current = false;
     }
-  }, [conversation?.id]);
+  }, [digitalHumanId]);
 
   // 清除错误
   const clearError = useCallback(() => {
@@ -252,10 +285,10 @@ export function useConversation({
 
   // 自动加载消息
   useEffect(() => {
-    if (conversation?.id) {
+    if (digitalHumanId) {
       loadMessages();
     }
-  }, [conversation?.id]);
+  }, [digitalHumanId, loadMessages]);
 
   // 组件卸载时清理
   useEffect(() => {

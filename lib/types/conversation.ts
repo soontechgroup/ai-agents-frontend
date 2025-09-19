@@ -25,42 +25,45 @@ export interface ConversationDeleteRequest {
 }
 
 export interface ConversationMessagesRequest {
-  conversation_id: number;
+  digital_human_id: number;
   limit?: number;
 }
 
 export interface ConversationSendRequest {
-  conversation_id: number;
+  digital_human_id: number;
   content: string;
 }
 
 export interface ConversationChatRequest {
-  conversation_id: number;
+  digital_human_id: number;
   message: string;
   stream?: boolean;
 }
 
 export interface ConversationClearRequest {
-  conversation_id: number;
+  digital_human_id: number;
 }
 
 export interface Conversation {
-  id: number;
   user_id: number;
   digital_human_id: number;
   title?: string;
-  thread_id: string;
-  status: string;
   last_message_at?: string;
   created_at: string;
-  updated_at: string;
 }
 
 export interface Message {
   id: number;
-  conversation_id: number;
+  digital_human_id: number;
   role: 'user' | 'assistant' | 'system';
   content: string;
+  type?: 'text' | 'memory' | 'thinking' | 'knowledge';  // 消息类型
+  metadata?: {  // 额外信息
+    count?: number;
+    has_memory?: boolean;
+    entities?: any[];
+    [key: string]: any;
+  };
   created_at: string;
 }
 

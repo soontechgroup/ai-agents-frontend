@@ -80,7 +80,7 @@ class ConversationService {
     
     const eventSource = new EventSource(
       `${url}?${new URLSearchParams({
-        conversation_id: data.conversation_id.toString(),
+        digital_human_id: data.digital_human_id.toString(),
         message: data.message,
         stream: (data.stream ?? true).toString()
       })}`,
@@ -97,8 +97,8 @@ class ConversationService {
   async chatStreamPost(data: ConversationChatRequest): Promise<Response> {
     const token = localStorage.getItem('token');
     const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${this.basePath}/chat`;
-    
-    return fetch(url, {
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -110,6 +110,8 @@ class ConversationService {
         stream: true // 确保启用流式响应
       })
     });
+
+    return response;
   }
   
   /**

@@ -1,27 +1,19 @@
 'use client';
 
-import { ArrowLeft, Star, Share2, MessageCircle, Brain } from 'lucide-react';
+import { ArrowLeft, Brain } from 'lucide-react';
 import { DigitalHuman } from '@/lib/types/digital-human';
 import { useRouter } from 'next/navigation';
 
 interface ChatTopbarProps {
   digitalHuman: DigitalHuman;
   sessionStartTime: number;
-  messageCount: number;
-  isFavorited: boolean;
   onBack: () => void;
-  onToggleFavorite: () => void;
-  onShare: () => void;
 }
 
 export default function ChatTopbar({
   digitalHuman,
   sessionStartTime,
-  messageCount,
-  isFavorited,
-  onBack,
-  onToggleFavorite,
-  onShare
+  onBack
 }: ChatTopbarProps) {
   const router = useRouter();
   
@@ -40,13 +32,6 @@ export default function ChatTopbar({
         <h1 className="text-lg font-semibold text-[var(--text-primary)]">
           {digitalHuman.name}
         </h1>
-        
-        <div className="flex gap-6 text-sm text-[var(--text-secondary)]">
-          <div className="flex items-center gap-2">
-            <MessageCircle size={16} />
-            <span>{messageCount} 条消息</span>
-          </div>
-        </div>
       </div>
 
       {/* 操作按钮 */}
@@ -65,22 +50,6 @@ export default function ChatTopbar({
         >
           <Brain size={16} />
           <span className="text-[var(--text-primary)]">记忆体</span>
-        </button>
-        
-        <button
-          onClick={onToggleFavorite}
-          className="px-4 py-2 bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded-lg text-sm flex items-center gap-2 transition-all duration-300 hover:bg-[rgba(0,217,255,0.1)] hover:border-[var(--accent-primary)]"
-        >
-          <Star size={16} className={isFavorited ? 'fill-[var(--warning)] text-[var(--warning)]' : ''} />
-          <span className="text-[var(--text-primary)]">收藏</span>
-        </button>
-        
-        <button
-          onClick={onShare}
-          className="px-4 py-2 bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded-lg text-sm flex items-center gap-2 transition-all duration-300 hover:bg-[rgba(0,217,255,0.1)] hover:border-[var(--accent-primary)]"
-        >
-          <Share2 size={16} />
-          <span className="text-[var(--text-primary)]">分享</span>
         </button>
       </div>
     </header>

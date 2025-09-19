@@ -96,7 +96,7 @@ export default function ChatInput({ onSendMessage, isDisabled = false, isSending
 
     onSendMessage(trimmedText);
     setText('');
-    
+
     // 重置输入框高度
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';

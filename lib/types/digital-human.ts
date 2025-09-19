@@ -11,7 +11,8 @@ export interface DigitalHuman {
   temperature?: number;
   max_tokens?: number;
   avatar?: string;
-  status?: 'online' | 'offline';
+  is_active?: boolean;  // 模板是否启用
+  is_public?: boolean;  // 是否公开模板
   chats?: number;
   likes?: number;
   rating?: number;
@@ -132,12 +133,19 @@ export interface ThinkingStep {
 }
 
 export interface TrainingEvent {
-  type: 'user_message' | 'assistant_question' | 'thinking' | 'node_start' | 'node_complete' | 'knowledge_extracted' | 'error';
-  node?: string;
-  message?: string;
-  data?: any;
-  result?: any;
-  timestamp?: string;
+  type: 'user_message' | 'assistant_question' | 'thinking' | 'node_start' | 'node_complete' | 'knowledge_extracted' | 'memory_found' | 'error';
+  content?: string;  // 主要内容
+  node?: string;  // 节点名称（node_start, node_complete 等事件使用）
+  message?: string;  // 消息内容（某些事件使用）
+  timestamp?: string;  // 时间戳
+  result?: any;  // 结果数据
+  metadata?: {  // 额外信息
+    id?: number;
+    entities?: any[];
+    entities_count?: number;
+    relationships_count?: number;
+    [key: string]: any;
+  };
 }
 
 export interface TrainingProgress {

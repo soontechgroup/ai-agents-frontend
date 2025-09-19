@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { MessageCircle, ThumbsUp, Lock, Eye, Edit } from 'lucide-react';
+import { MessageCircle, Lock, Eye, Edit } from 'lucide-react';
 import { useToast } from '@/lib/hooks/useToast';
 
 interface DigitalHumanCardProps {
@@ -11,6 +11,8 @@ interface DigitalHumanCardProps {
   status?: 'online' | 'offline';
   chats?: number;
   likes?: number;
+  type?: string;
+  skills?: string[];
   imageUrl?: string;
   isCreateNew?: boolean;
   canAccess?: boolean;
@@ -25,6 +27,8 @@ export default function DigitalHumanCard({
   status = 'online',
   chats = 0,
   likes = 0,
+  type,
+  skills,
   imageUrl,
   isCreateNew = false,
   canAccess = true,
@@ -110,22 +114,8 @@ export default function DigitalHumanCard({
           </div>
         )}
         
-        {/* 状态标签 */}
+        {/* 权限标签 */}
         <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
-          {status === 'online' && canAccess && (
-            <span 
-              className="px-3 py-1 rounded-full text-xs backdrop-blur-[10px]"
-              style={{
-                backgroundColor: 'rgba(0, 245, 160, 0.2)',
-                border: '1px solid var(--success)',
-                color: 'var(--success)'
-              }}
-            >
-              在线
-            </span>
-          )}
-          
-          {/* 权限标签 */}
           {(!canAccess || accessLevel !== 'chat') && (
             <span 
               className="px-3 py-1 rounded-full text-xs backdrop-blur-[10px] flex items-center gap-1"
@@ -160,18 +150,26 @@ export default function DigitalHumanCard({
         <h3 className="text-xl font-semibold mb-2 text-[var(--text-primary)]">{name}</h3>
         <p className="text-sm text-[var(--text-secondary)] mb-4 line-clamp-2">{description}</p>
         
-        <div 
-          className="flex gap-6 pt-4" 
+        <div
+          className="flex gap-4 pt-4"
           style={{ borderTop: '1px solid var(--border-default)' }}
         >
-          <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-            <MessageCircle size={16} className="text-[var(--accent-primary)]" />
-            <span>{chats > 1000 ? `${(chats / 1000).toFixed(1)}k` : chats}次对话</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-            <ThumbsUp size={16} className="text-[var(--accent-primary)]" />
-            <span>{likes}赞</span>
-          </div>
+          {type && (
+            <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+              <span className="px-2 py-1 bg-[var(--bg-primary)] rounded text-xs">{type}</span>
+            </div>
+          )}
+          {skills && skills.length > 0 && (
+            <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] flex-1">
+              <span className="text-xs">技能: {skills.slice(0, 2).join('、')}{skills.length > 2 ? '...' : ''}</span>
+            </div>
+          )}
+          {!type && !skills && (
+            <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+              <MessageCircle size={16} className="text-[var(--accent-primary)]" />
+              <span>智能助手</span>
+            </div>
+          )}
         </div>
       </div>
       <ToastContainer />

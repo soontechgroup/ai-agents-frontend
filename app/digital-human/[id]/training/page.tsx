@@ -10,6 +10,26 @@ import TrainingChat from './components/TrainingChat';
 import ThinkingProcess from './components/ThinkingProcess';
 import TrainingProgressBar from './components/TrainingProgressBar';
 
+// 节点名称映射
+const NODE_NAME_MAP: Record<string, string> = {
+  'intent_recognition': '意图识别',
+  'memory_search': '记忆搜索',
+  'knowledge_extraction': '知识提取',
+  'context_analysis': '上下文分析',
+  'question_generation': '问题生成',
+  'save_message': '保存消息',
+  'question_asking': '提问阶段',
+  'deepening': '深化理解',
+  'response_generation': '生成回复',
+  'validation': '验证阶段',
+  'completion': '完成阶段'
+};
+
+// 获取节点的中文名称
+const getNodeDisplayName = (node: string): string => {
+  return NODE_NAME_MAP[node] || node;
+};
+
 export default function DigitalHumanTrainingPage() {
   const params = useParams();
   const router = useRouter();
@@ -116,34 +136,38 @@ export default function DigitalHumanTrainingPage() {
         
       case 'assistant_question':
         setMessages(prev => [...prev, {
-          id: `assistant-${Date.now()}`,
+          id: event.metadata?.id ? `assistant-${event.metadata.id}` : `assistant-${Date.now()}`,
           role: 'assistant',
-          content: event.data,
+          content: event.content,
           timestamp: new Date()
         }]);
         setIsTraining(false);
         break;
         
       case 'thinking':
-        setCurrentThinking(event.data || '');
+        setCurrentThinking(event.content || '');
         break;
         
       case 'node_start':
+        const nodeName = event.node || event.metadata?.node || '';
+        const message = event.message || event.content || '';
         setThinkingSteps(prev => [...prev, {
-          stage: event.node || '未知阶段',
-          detail: event.message || '',
-          timestamp: event.timestamp
+          stage: getNodeDisplayName(nodeName),
+          detail: message,
+          timestamp: event.timestamp || event.metadata?.timestamp
         }]);
         break;
         
       case 'node_complete':
         // 更新最后一个思考步骤的状态
+        const completeNodeName = event.node || event.metadata?.node || '';
+        const completeMessage = event.message || event.content || '';
         setThinkingSteps(prev => {
           const steps = [...prev];
           if (steps.length > 0) {
             const lastStep = steps[steps.length - 1];
-            if (lastStep.stage === event.node) {
-              lastStep.detail = event.message || lastStep.detail;
+            if (lastStep.stage === getNodeDisplayName(completeNodeName)) {
+              lastStep.detail = completeMessage;
             }
           }
           return steps;
@@ -151,15 +175,32 @@ export default function DigitalHumanTrainingPage() {
         break;
         
       case 'knowledge_extracted':
-        // 可以在这里显示知识提取的可视化
-        if (event.data && Array.isArray(event.data)) {
-          const entityCount = event.data.length;
+        // 显示知识提取的提示
+        if (event.content) {
+          showToast({ message: event.content, type: 'success' });
+        } else if (event.metadata?.entities) {
+          const entityCount = event.metadata.entities.length;
           showToast({ message: `提取了 ${entityCount} 个知识点`, type: 'success' });
         }
         break;
-        
+
+      case 'memory_found':
+        // 显示记忆搜索结果
+        if (event.message) {
+          // 可以在思考步骤中显示这个信息
+          setThinkingSteps(prev => {
+            const steps = [...prev];
+            const lastStep = steps[steps.length - 1];
+            if (lastStep && lastStep.stage === getNodeDisplayName('memory_search')) {
+              lastStep.detail = event.message;
+            }
+            return steps;
+          });
+        }
+        break;
+
       case 'error':
-        showToast({ message: event.data || '训练过程出现错误', type: 'error' });
+        showToast({ message: event.content || '训练过程出现错误', type: 'error' });
         setIsTraining(false);
         break;
     }
