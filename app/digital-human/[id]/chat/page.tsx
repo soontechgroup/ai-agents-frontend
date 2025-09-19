@@ -32,7 +32,8 @@ export default function DigitalHumanChatPage() {
     error: conversationError,
     sendMessage: sendConversationMessage,
     clearError,
-    createConversation
+    createConversation,
+    loadMessages
   } = useConversation({
     digitalHumanId: numericId,
     autoCreate: false
@@ -115,10 +116,15 @@ export default function DigitalHumanChatPage() {
   }, [numericId]);
 
   useEffect(() => {
-    if (digitalHuman && !conversation && !isConversationLoading) {
-      createConversation();
+    if (digitalHuman && !isConversationLoading) {
+      // 先加载历史消息
+      loadMessages();
+      // 如果没有会话，创建新会话
+      if (!conversation) {
+        createConversation();
+      }
     }
-  }, [digitalHuman, conversation, isConversationLoading, createConversation]);
+  }, [digitalHuman]); // 只在 digitalHuman 变化时执行
 
   const sendMessage = async (content: string) => {
     if (!digitalHuman) {
@@ -145,14 +151,12 @@ export default function DigitalHumanChatPage() {
 
 
 
-  if (isLoading || (digitalHuman && !conversation && isConversationLoading)) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-[var(--bg-primary)]">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--accent-primary)]"></div>
-          <p className="mt-4 text-[var(--text-secondary)]">
-            {isLoading ? '正在加载数字人信息...' : '正在初始化会话...'}
-          </p>
+          <p className="mt-4 text-[var(--text-secondary)]">正在加载数字人信息...</p>
         </div>
       </div>
     );
@@ -202,7 +206,7 @@ export default function DigitalHumanChatPage() {
 
         <ChatInput
           onSendMessage={sendMessage}
-          isDisabled={!conversation || isConversationLoading}
+          isDisabled={false}
           isSending={isThinking}
         />
       </main>

@@ -56,7 +56,7 @@ export function useConversation({
 
       if (response.data) {
         setConversation(response.data);
-        setMessages([]);
+        // 不清空消息，保留已加载的历史消息
       } else {
         throw new Error('创建会话失败');
       }
@@ -80,12 +80,23 @@ export function useConversation({
         digital_human_id: digitalHumanId,
         limit: 100
       });
-      
+
       if (response.data?.messages) {
-        setMessages(response.data.messages);
+        // 确保消息格式正确，添加缺失的 id 字段（如果需要）
+        const formattedMessages = response.data.messages.map((msg, index) => ({
+          ...msg,
+          id: msg.id || Date.now() + index,
+          digital_human_id: msg.digital_human_id || digitalHumanId
+        }));
+        setMessages(formattedMessages);
+        console.log('加载了历史消息:', formattedMessages.length);
+      } else {
+        console.log('没有历史消息');
+        setMessages([]);
       }
     } catch (err: any) {
       const errorMessage = err?.response?.data?.message || err?.message || '加载消息失败';
+      console.error('加载消息失败:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -283,12 +294,12 @@ export function useConversation({
     }
   }, [autoCreate, digitalHumanId, conversation, createConversation]);
 
-  // 自动加载消息
+  // 自动加载消息（只在初始化时加载一次）
   useEffect(() => {
-    if (digitalHumanId) {
+    if (digitalHumanId && !messages.length) {
       loadMessages();
     }
-  }, [digitalHumanId, loadMessages]);
+  }, [digitalHumanId]); // 移除 loadMessages 依赖避免无限循环
 
   // 组件卸载时清理
   useEffect(() => {
