@@ -180,7 +180,7 @@ export default function DigitalHumanCard({
   if (canAccess && accessLevel !== 'view') {
     return (
       <Link
-        href={`/digital-human/${id}`}
+        href={`/digital-human/${id}/chat`}
         onClick={handleClick}
         className="block w-full rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer relative"
       style={{

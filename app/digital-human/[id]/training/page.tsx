@@ -6,9 +6,9 @@ import { ArrowLeft, Brain, MessageSquare, Sparkles, Activity } from 'lucide-reac
 import { DigitalHuman, TrainingMessage, TrainingEvent, ThinkingStep, TrainingProgress, TrainingMessageFromAPI } from '@/lib/types/digital-human';
 import { digitalHumanService } from '@/lib/api/services/digital-human.service';
 import { useToast } from '@/lib/hooks/useToast';
-import TrainingChat from './components/TrainingChat';
-import ThinkingProcess from './components/ThinkingProcess';
-import TrainingProgressBar from './components/TrainingProgressBar';
+import TrainingChat from '@/components/digital-human/training/TrainingChat';
+import ThinkingProcess from '@/components/digital-human/training/ThinkingProcess';
+import TrainingProgressBar from '@/components/digital-human/training/TrainingProgressBar';
 
 // 节点名称映射
 const NODE_NAME_MAP: Record<string, string> = {
@@ -292,7 +292,7 @@ export default function DigitalHumanTrainingPage() {
       {/* 顶部栏 */}
       <header className="h-16 bg-gray-800/80 backdrop-blur-xl border-b border-gray-700/50 flex items-center px-6 gap-4">
         <button
-          onClick={() => router.push(`/digital-human/${id}`)}
+          onClick={() => router.push(`/digital-human/${id}/chat`)}
           className="p-2 hover:bg-gray-700/50 rounded-lg transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-gray-400" />

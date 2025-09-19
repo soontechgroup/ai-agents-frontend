@@ -204,7 +204,7 @@ export default function MyDigitalHumans({ onDigitalHumansCountChange, onDataChan
 
                 <div className="flex items-center justify-between pt-3 border-t border-gray-600">
                   <Link
-                    href={`/digital-human/${human.id}`}
+                    href={`/digital-human/${human.id}/chat`}
                     className="flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm transition-colors"
                   >
                     <MessageCircle size={14} />

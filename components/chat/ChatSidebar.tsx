@@ -14,18 +14,13 @@ export default function ChatSidebar({
       {/* 数字人信息卡片 */}
       <div className="px-6 mb-8">
         <div className="p-6 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border-default)] mb-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] rounded-xl flex items-center justify-center text-2xl font-bold text-[var(--bg-primary)] shadow-[var(--glow-sm)]">
-              {digitalHuman.avatar}
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
-                {digitalHuman.name}
-              </h3>
-              <p className="text-sm text-[var(--text-secondary)]">
-                {digitalHuman.short_description || digitalHuman.detailed_description || '数字人助手'}
-              </p>
-            </div>
+          <div>
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
+              {digitalHuman.name}
+            </h3>
+            <p className="text-sm text-[var(--text-secondary)]">
+              {digitalHuman.short_description || digitalHuman.detailed_description || '数字人助手'}
+            </p>
           </div>
         </div>
       </div>

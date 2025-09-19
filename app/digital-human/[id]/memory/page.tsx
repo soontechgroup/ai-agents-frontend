@@ -3,12 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MemoryStats } from './components/MemoryStats';
-import { MemorySearch } from './components/MemorySearch';
-import { RecentMemories } from './components/RecentMemories';
-import { KnowledgeGraph, KnowledgeGraphHandle } from './components/KnowledgeGraph';
-import { GraphControls } from './components/GraphControls';
-import { MemoryDetail } from './components/MemoryDetail';
+import { MemoryStats } from '@/components/digital-human/memory/MemoryStats';
+import { MemorySearch } from '@/components/digital-human/memory/MemorySearch';
+import { RecentMemories } from '@/components/digital-human/memory/RecentMemories';
+import { KnowledgeGraph, KnowledgeGraphHandle } from '@/components/digital-human/memory/KnowledgeGraph';
+import { GraphControls } from '@/components/digital-human/memory/GraphControls';
+import { MemoryDetail } from '@/components/digital-human/memory/MemoryDetail';
 import { memoryService } from '@/lib/api/services/memory.service';
 import {
   MemoryStats as MemoryStatsType,
