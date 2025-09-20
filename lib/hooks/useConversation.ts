@@ -89,14 +89,11 @@ export function useConversation({
           digital_human_id: msg.digital_human_id || digitalHumanId
         }));
         setMessages(formattedMessages);
-        console.log('加载了历史消息:', formattedMessages.length);
       } else {
-        console.log('没有历史消息');
         setMessages([]);
       }
     } catch (err: any) {
       const errorMessage = err?.response?.data?.message || err?.message || '加载消息失败';
-      console.error('加载消息失败:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -197,7 +194,7 @@ export function useConversation({
               const messageType = parsed.metadata?.messageType;
 
               if (messageType && ['memory', 'thinking', 'knowledge'].includes(messageType)) {
-                // 特殊类型的消息，更新现有消息的metadata
+                // 特殊类型的消息
                 if (!aiMessageCreated) {
                   // 如果还没有创建AI消息，创建一个包含特殊类型的消息
                   const aiMessage: Message = {
@@ -206,19 +203,55 @@ export function useConversation({
                     role: 'assistant',
                     content: '', // 内容稍后会填充
                     type: messageType as 'memory' | 'thinking' | 'knowledge',
-                    metadata: parsed.metadata,
+                    // 如果是 memory 类型，构造正确的 memory 对象结构
+                    memory: messageType === 'memory' ? {
+                      type: 'memory',
+                      content: parsed.content || `找到 ${parsed.metadata?.entity_count || parsed.metadata?.count || 0} 个相关记忆`,
+                      metadata: {
+                        count: parsed.metadata?.entity_count || parsed.metadata?.count || 0,
+                        entity_count: parsed.metadata?.entity_count || 0,
+                        relationship_count: parsed.metadata?.relationship_count || 0,
+                        has_memory: true,
+                        entities: parsed.metadata?.originalData?.metadata?.entities || parsed.metadata?.entities || [],
+                        nodes: parsed.metadata?.originalData?.metadata?.nodes || parsed.metadata?.nodes || [],
+                        edges: parsed.metadata?.originalData?.metadata?.edges || parsed.metadata?.edges || [],
+                        relationships: parsed.metadata?.originalData?.metadata?.relationships || parsed.metadata?.relationships || []
+                      }
+                    } : undefined,
+                    metadata: messageType === 'memory' ? {
+                      has_memory: true,
+                      memory_count: parsed.metadata?.entity_count || parsed.metadata?.count || 0
+                    } : parsed.metadata,
                     created_at: new Date().toISOString()
                   };
                   setMessages(prev => [...prev, aiMessage]);
                   aiMessageCreated = true;
                 } else {
-                  // 如果消息已存在，更新其类型和metadata
+                  // 如果消息已存在，更新其类型和相应字段
                   setMessages(prev => prev.map(msg =>
                     msg.id === aiMessageId
                       ? {
                           ...msg,
                           type: messageType as 'memory' | 'thinking' | 'knowledge',
-                          metadata: { ...msg.metadata, ...parsed.metadata }
+                          memory: messageType === 'memory' ? {
+                            type: 'memory',
+                            content: parsed.content || `找到 ${parsed.metadata?.entity_count || parsed.metadata?.count || 0} 个相关记忆`,
+                            metadata: {
+                              count: parsed.metadata?.entity_count || parsed.metadata?.count || 0,
+                              entity_count: parsed.metadata?.entity_count || 0,
+                              relationship_count: parsed.metadata?.relationship_count || 0,
+                              has_memory: true,
+                              entities: parsed.metadata?.originalData?.metadata?.entities || parsed.metadata?.entities || [],
+                              nodes: parsed.metadata?.originalData?.metadata?.nodes || parsed.metadata?.nodes || [],
+                              edges: parsed.metadata?.originalData?.metadata?.edges || parsed.metadata?.edges || [],
+                              relationships: parsed.metadata?.originalData?.metadata?.relationships || parsed.metadata?.relationships || []
+                            }
+                          } : msg.memory,
+                          metadata: messageType === 'memory' ? {
+                            ...msg.metadata,
+                            has_memory: true,
+                            memory_count: parsed.metadata?.entity_count || parsed.metadata?.count || 0
+                          } : { ...msg.metadata, ...parsed.metadata }
                         }
                       : msg
                   ));

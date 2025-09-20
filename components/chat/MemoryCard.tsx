@@ -6,18 +6,22 @@ import MemoryModal from './MemoryModal';
 
 interface MemoryCardProps {
   content: string;
-  metadata?: {
-    count?: number;
-    has_memory?: boolean;
-    entities?: any[];
-    messageType?: string;
-    originalData?: any;
+  memory?: {  // 使用独立的 memory 字段
+    type?: string;
+    content?: string;
+    metadata?: {
+      count?: number;
+      entities?: any[];
+      nodes?: any[];
+      edges?: any[];
+      [key: string]: any;
+    };
     [key: string]: any;
   };
   timestamp?: string;
 }
 
-export default function MemoryCard({ content, metadata, timestamp }: MemoryCardProps) {
+export default function MemoryCard({ content, memory, timestamp }: MemoryCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
 
@@ -26,27 +30,14 @@ export default function MemoryCard({ content, metadata, timestamp }: MemoryCardP
   let entityCount = 0;
   let summaryText = '正在检索记忆...';
 
-  // 从多个可能的位置获取记忆数据
-  if (metadata?.originalData) {
-    const data = metadata.originalData;
-    memories = data.memories || data.entities || data.data || data.results || [];
-    entityCount = data.count || memories.length;
-  } else if (metadata?.entities) {
-    memories = metadata.entities;
-    entityCount = metadata.count || memories.length;
-  } else if (metadata?.count) {
-    entityCount = metadata.count;
-  }
-
-  // 检查metadata中的其他字段
-  if (memories.length === 0 && metadata) {
-    // 查找任何可能是记忆数据的数组
-    Object.keys(metadata).forEach(key => {
-      if (Array.isArray(metadata[key]) && metadata[key].length > 0 && memories.length === 0) {
-        memories = metadata[key];
-        entityCount = memories.length;
-      }
-    });
+  // 从 memory 字段获取记忆数据
+  if (memory?.metadata) {
+    memories = memory.metadata.entities || memory.metadata.nodes || [];
+    entityCount = memory.metadata.count || memories.length;
+  } else if (memory) {
+    // 尝试从 memory 根级别获取
+    memories = memory.entities || memory.nodes || memory.data || [];
+    entityCount = memory.count || memories.length;
   }
 
   // 生成摘要
@@ -94,7 +85,7 @@ export default function MemoryCard({ content, metadata, timestamp }: MemoryCardP
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         content={content}
-        metadata={metadata}
+        memory={memory}
       />
     </>
   );

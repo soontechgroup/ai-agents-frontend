@@ -110,11 +110,19 @@ export function parseSSEData(data: string): ParsedSSEData {
   try {
     const parsed = JSON.parse(data);
 
-    // 检查是否是错误响应
+    // 检查是否是错误响应（两种格式）
     if (parsed.error) {
       return {
         type: 'error',
         error: parsed.error.message || '未知错误'
+      };
+    }
+
+    // 新格式的错误消息
+    if (parsed.type === 'error') {
+      return {
+        type: 'error',
+        error: parsed.content || parsed.message || '未知错误'
       };
     }
 
@@ -131,8 +139,11 @@ export function parseSSEData(data: string): ParsedSSEData {
         metadata: {
           messageType: 'memory',
           originalData: parsed,
-          entities: parsed.entities || parsed.memories || parsed.data,
-          count: parsed.count || (parsed.entities ? parsed.entities.length : 0)
+          entities: parsed.metadata?.entities || parsed.entities || [],
+          relationships: parsed.metadata?.relationships || parsed.relationships || [],
+          count: parsed.metadata?.entity_count || parsed.metadata?.count || 0,
+          entity_count: parsed.metadata?.entity_count || 0,
+          relationship_count: parsed.metadata?.relationship_count || 0
         }
       };
     }

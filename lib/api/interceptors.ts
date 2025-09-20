@@ -39,9 +39,7 @@ export function createAuthInterceptor(): RequestInterceptor {
  */
 export function createLoggerInterceptor(): ResponseInterceptor {
   return async (response: Response) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[API] ${response.status} ${response.url}`);
-    }
+    // 可以在这里添加其他日志逻辑，如发送到日志服务
     return response;
   };
 }

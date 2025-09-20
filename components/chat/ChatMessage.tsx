@@ -6,6 +6,20 @@ import StreamingMessage from './StreamingMessage';
 
 interface ExtendedChatMessage extends ChatMessageType {
   specialContent?: ReactNode;
+  metadata?: {
+    // 用户消息的 metadata
+    input_tokens?: number;
+    input_length?: number;
+    // AI 消息的 metadata
+    response_time_ms?: number;
+    response_tokens?: number;
+    response_length?: number;
+    model?: string;
+    temperature?: number;
+    sync_mode?: boolean;
+    timestamp?: string;
+    [key: string]: any;
+  };
 }
 
 interface ChatMessageProps {
@@ -16,9 +30,9 @@ interface ChatMessageProps {
 
 export default function ChatMessage({ message, digitalHumanAvatar = '🎤', isStreaming = false }: ChatMessageProps) {
   const isUser = message.type === 'user';
-  const time = message.timestamp.toLocaleTimeString('zh-CN', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  const time = message.timestamp.toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit'
   });
 
   return (
@@ -66,7 +80,7 @@ export default function ChatMessage({ message, digitalHumanAvatar = '🎤', isSt
           </div>
         )}
 
-        {/* 时间显示 */}
+        {/* 时间信息 */}
         <div className="text-xs text-[var(--text-muted)] mt-2">
           {time}
         </div>

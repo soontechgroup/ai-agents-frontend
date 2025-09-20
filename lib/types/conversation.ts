@@ -58,10 +58,37 @@ export interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
   type?: 'text' | 'memory' | 'thinking' | 'knowledge';  // 消息类型
-  metadata?: {  // 额外信息
-    count?: number;
+  metadata?: {  // 元信息
+    // 通用字段
+    timestamp?: string;
+
+    // 用户消息的 metadata
+    input_tokens?: number;
+    input_length?: number;
+
+    // AI 消息的 metadata
+    response_time_ms?: number;
+    response_tokens?: number;
+    response_length?: number;
+    model?: string;
+    temperature?: number;
+    sync_mode?: boolean;
     has_memory?: boolean;
-    entities?: any[];
+    memory_count?: number;
+
+    // 其他字段
+    [key: string]: any;
+  };
+  memory?: {  // 记忆搜索数据（独立字段）
+    type?: string;
+    content?: string;
+    metadata?: {
+      count?: number;
+      entities?: any[];
+      nodes?: any[];
+      edges?: any[];
+      [key: string]: any;
+    };
     [key: string]: any;
   };
   created_at: string;

@@ -40,11 +40,13 @@ export default function ChatDialogue({ messages, isThinking, digitalHumanAvatar,
 
           // 检查是否有特殊类型内容
           let specialContent = null;
-          if (messageType === 'memory') {
+
+          // 首先检查是否有 memory 字段（不管消息类型）
+          if (message.memory) {
             specialContent = (
               <MemoryCard
                 content={message.content}
-                metadata={message.metadata}
+                memory={message.memory}
                 timestamp={message.created_at}
               />
             );
@@ -72,7 +74,8 @@ export default function ChatDialogue({ messages, isThinking, digitalHumanAvatar,
             type: message.role === 'user' ? 'user' as const : 'ai' as const,
             content: message.content,
             timestamp: message.created_at ? new Date(message.created_at) : new Date(),
-            specialContent
+            specialContent,
+            metadata: message.metadata  // 传递 metadata 信息
           };
 
           return (
