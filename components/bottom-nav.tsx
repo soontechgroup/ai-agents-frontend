@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Home, MessageCircle, BookOpen, User } from 'lucide-react';
+import { Home, User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export default function BottomNav() {
@@ -9,8 +9,6 @@ export default function BottomNav() {
 
   const navItems = [
     { href: '/', icon: <Home size={24} />, label: '首页' },
-    { href: '/chat', icon: <MessageCircle size={24} />, label: '会话' },
-    { href: '/books', icon: <BookOpen size={24} />, label: '书单' },
     { href: '/profile', icon: <User size={24} />, label: '我的' },
   ];
 

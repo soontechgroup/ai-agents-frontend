@@ -42,23 +42,6 @@ export default function Navbar() {
             </li>
             <li>
               <Link 
-                href="/chat" 
-                className={`transition-colors relative ${
-                  pathname === '/chat' 
-                    ? 'text-[var(--accent-primary)]' 
-                    : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'
-                }`}
-              >
-                会话
-                {pathname === '/chat' && (
-                  <div className="absolute -bottom-2 left-0 right-0 h-0.5" style={{
-                    background: 'var(--accent-gradient)'
-                  }} />
-                )}
-              </Link>
-            </li>
-            <li>
-              <Link 
                 href="/personal" 
                 className={`transition-colors relative ${
                   pathname === '/personal' 
@@ -122,18 +105,6 @@ export default function Navbar() {
                   }`}
                 >
                   首页
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/chat" 
-                  className={`block ${
-                    pathname === '/chat' 
-                      ? 'text-[var(--accent-primary)]' 
-                      : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'
-                  }`}
-                >
-                  会话
                 </Link>
               </li>
               <li>
