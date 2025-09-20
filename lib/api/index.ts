@@ -2,6 +2,7 @@
 export { authService } from './services/auth.service';
 export { userService } from './services/user.service';
 export { digitalHumanService } from './services/digital-human.service';
+export { conversationService } from './services/conversation.service';
 
 // 导出 HTTP 客户端（用于自定义请求）
 export { httpClient, default as HttpClient } from './http-client';

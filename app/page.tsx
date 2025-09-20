@@ -22,14 +22,14 @@ export default function HomePage() {
 
       <Navbar />
 
-      <main className="w-full py-4 sm:py-6 lg:py-8 pb-24 lg:pb-8">
+      <main className="w-full py-2 sm:py-3 lg:py-4 pb-24 lg:pb-8">
         <div className="max-w-[1200px] mx-auto px-6 sm:px-8 lg:px-12">
           {/* Hero Section */}
-          <section className="text-center py-8 lg:py-16 mb-8 lg:mb-16">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 gradient-text">
+          <section className="text-center py-4 lg:py-8 mb-4 lg:mb-6">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 gradient-text">
               探索AI数字人的无限可能
             </h1>
-            <p className="text-base sm:text-lg lg:text-xl text-[var(--text-secondary)] mb-8">
+            <p className="text-sm sm:text-base lg:text-lg text-[var(--text-secondary)] mb-6">
               创建属于您的专属数字人，开启智能对话新体验
             </p>
             

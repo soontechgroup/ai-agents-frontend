@@ -105,7 +105,7 @@ export default function DigitalHumanList({
     <div className={className}>
       {/* Search Section */}
       {showSearch && (
-        <section className="max-w-3xl mx-auto mb-8 lg:mb-16">
+        <section className="max-w-3xl mx-auto mb-4 lg:mb-8">
           <div className="relative">
             <Search 
               size={20} 
@@ -134,18 +134,12 @@ export default function DigitalHumanList({
         </section>
       )}
 
-      {/* Digital Humans Grid */}
-      <section 
-        className="w-full p-6 sm:p-8 rounded-2xl"
-        style={{
-          backgroundColor: 'rgba(22, 33, 62, 0.3)',
-          border: '1px solid var(--border-default)'
-        }}
-      >
-        <h2 className="text-2xl font-semibold mb-6 text-[var(--text-primary)]">
+      {/* Digital Humans Section */}
+      <section className="w-full">
+        <h2 className="text-xl font-semibold mb-4 text-[var(--text-primary)]">
           {searchQuery ? '搜索结果' : title}
         </h2>
-        
+
         {/* 数字人列表 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {digitalHumans.length > 0 ? (

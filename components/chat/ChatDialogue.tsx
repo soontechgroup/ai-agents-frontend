@@ -27,7 +27,7 @@ export default function ChatDialogue({ messages, isThinking, digitalHumanAvatar,
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div 
+      <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto px-12 py-8 space-y-6 scrollbar-thin scrollbar-thumb-[var(--border-default)] scrollbar-track-transparent"
       >
@@ -87,7 +87,7 @@ export default function ChatDialogue({ messages, isThinking, digitalHumanAvatar,
             />
           );
         })}
-        
+
         {isThinking && messages.length > 0 && messages[messages.length - 1].role === 'user' && (
           <ThinkingBubble digitalHumanAvatar={digitalHumanAvatar} />
         )}

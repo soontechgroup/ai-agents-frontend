@@ -42,22 +42,27 @@ export default function DigitalHumanCard({
     return (
       <Link
         href="/create"
-        className="block w-full min-h-[400px] rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center cursor-pointer"
+        className="block w-full h-full rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center cursor-pointer"
         style={{
           backgroundColor: 'rgba(22, 33, 62, 0.5)',
-          borderColor: 'var(--border-default)'
+          borderColor: 'var(--border-default)',
+          minHeight: '120px'
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.borderColor = 'var(--accent-primary)';
           e.currentTarget.style.backgroundColor = 'rgba(22, 33, 62, 0.7)';
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = 'var(--shadow-xl), var(--glow-sm)';
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.borderColor = 'var(--border-default)';
           e.currentTarget.style.backgroundColor = 'rgba(22, 33, 62, 0.5)';
+          e.currentTarget.style.transform = '';
+          e.currentTarget.style.boxShadow = '';
         }}
       >
-        <div className="text-5xl text-[var(--accent-primary)] mb-4">＋</div>
-        <div className="text-[var(--text-secondary)]">创建新数字人</div>
+        <div className="text-3xl text-[var(--accent-primary)] mb-2">＋</div>
+        <div className="text-sm text-[var(--text-secondary)]">创建新数字人</div>
       </Link>
     );
   }
@@ -103,22 +108,12 @@ export default function DigitalHumanCard({
 
   const CardContent = (
     <>
-      <div className="h-[350px] relative overflow-hidden" style={{
-        background: imageUrl 
-          ? `url(${imageUrl}) center/cover` 
-          : 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)'
-      }}>
-        {!imageUrl && (
-          <div className="absolute inset-0 flex items-center justify-center text-[var(--text-muted)]">
-            数字人形象
-          </div>
-        )}
-        
-        {/* 权限标签 */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
+      <div className="p-5 relative">
+        {/* 权限和创建者标签 */}
+        <div className="absolute top-3 right-3 flex gap-2">
           {(!canAccess || accessLevel !== 'chat') && (
-            <span 
-              className="px-3 py-1 rounded-full text-xs backdrop-blur-[10px] flex items-center gap-1"
+            <span
+              className="px-2 py-0.5 rounded-full text-xs flex items-center gap-1"
               style={{
                 backgroundColor: !canAccess ? 'rgba(255, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.1)',
                 border: `1px solid ${!canAccess ? 'rgba(255, 0, 0, 0.5)' : 'var(--border-default)'}`,
@@ -129,11 +124,10 @@ export default function DigitalHumanCard({
               {getAccessText()}
             </span>
           )}
-          
-          {/* 创建者标签 */}
+
           {isOwner && (
-            <span 
-              className="px-3 py-1 rounded-full text-xs backdrop-blur-[10px]"
+            <span
+              className="px-2 py-0.5 rounded-full text-xs"
               style={{
                 backgroundColor: 'rgba(0, 217, 255, 0.2)',
                 border: '1px solid var(--accent-primary)',
@@ -144,30 +138,25 @@ export default function DigitalHumanCard({
             </span>
           )}
         </div>
-      </div>
 
-      <div className="p-6">
-        <h3 className="text-xl font-semibold mb-2 text-[var(--text-primary)]">{name}</h3>
-        <p className="text-sm text-[var(--text-secondary)] mb-4 line-clamp-2">{description}</p>
-        
-        <div
-          className="flex gap-4 pt-4"
-          style={{ borderTop: '1px solid var(--border-default)' }}
-        >
+        <h3 className="text-lg font-semibold mb-2 text-[var(--text-primary)] pr-20">{name}</h3>
+        <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2">{description}</p>
+
+        <div className="flex gap-3 pt-3" style={{ borderTop: '1px solid var(--border-default)' }}>
           {type && (
-            <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-              <span className="px-2 py-1 bg-[var(--bg-primary)] rounded text-xs">{type}</span>
+            <div className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)]">
+              <span className="px-2 py-0.5 bg-[var(--bg-primary)] rounded text-xs">{type}</span>
             </div>
           )}
           {skills && skills.length > 0 && (
-            <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] flex-1">
+            <div className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)] flex-1">
               <span className="text-xs">技能: {skills.slice(0, 2).join('、')}{skills.length > 2 ? '...' : ''}</span>
             </div>
           )}
           {!type && !skills && (
-            <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-              <MessageCircle size={16} className="text-[var(--accent-primary)]" />
-              <span>智能助手</span>
+            <div className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)]">
+              <MessageCircle size={14} className="text-[var(--accent-primary)]" />
+              <span className="text-xs">智能助手</span>
             </div>
           )}
         </div>
