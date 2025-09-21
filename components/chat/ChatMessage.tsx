@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, memo } from 'react';
 import { ChatMessage as ChatMessageType } from '@/lib/types/digital-human';
 import StreamingMessage from './StreamingMessage';
 
@@ -28,7 +28,7 @@ interface ChatMessageProps {
   isStreaming?: boolean;
 }
 
-export default function ChatMessage({ message, digitalHumanAvatar = '🎤', isStreaming = false }: ChatMessageProps) {
+const ChatMessage = memo(function ChatMessage({ message, digitalHumanAvatar = '🎤', isStreaming = false }: ChatMessageProps) {
   const isUser = message.type === 'user';
   const time = message.timestamp.toLocaleTimeString('zh-CN', {
     hour: '2-digit',
@@ -50,11 +50,12 @@ export default function ChatMessage({ message, digitalHumanAvatar = '🎤', isSt
 
       {/* 消息气泡 */}
       <div
-        className={`max-w-[75%] px-6 py-4 rounded-2xl border ${
+        className={`max-w-[75%] px-6 py-4 rounded-2xl border transition-all duration-200 ${
           isUser
             ? 'bg-[rgba(0,217,255,0.1)] border-[var(--accent-primary)]'
             : 'bg-[var(--bg-tertiary)] border-[var(--border-default)]'
         }`}
+        style={{ minHeight: '4rem' }}
       >
         {/* 特殊内容（如记忆卡片） */}
         {message.specialContent && (
@@ -87,4 +88,19 @@ export default function ChatMessage({ message, digitalHumanAvatar = '🎤', isSt
       </div>
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // 自定义比较函数，优化重渲染
+  // 如果是同一个消息且流式状态相同，则不重新渲染
+  if (prevProps.message.id !== nextProps.message.id) return false;
+
+  // 如果是用户消息，内容不会变化，可以跳过重渲染
+  if (prevProps.message.type === 'user') return true;
+
+  // 对于 AI 消息，检查内容是否真的变化了
+  if (prevProps.message.content !== nextProps.message.content) return false;
+  if (prevProps.isStreaming !== nextProps.isStreaming) return false;
+
+  return true;
+});
+
+export default ChatMessage;
